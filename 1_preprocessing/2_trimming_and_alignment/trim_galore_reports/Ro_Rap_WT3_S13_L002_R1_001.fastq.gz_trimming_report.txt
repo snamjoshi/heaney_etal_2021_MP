@@ -1,0 +1,106 @@
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: Ro_Rap_WT3_S13_L002_R1_001.fastq.gz
+Trimming mode: single-end
+Trim Galore version: 0.4.1
+Cutadapt version: 1.10
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; auto-detected)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length before a sequence gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Output file will be GZIP compressed
+
+
+This is cutadapt 1.10 with Python 2.7.11+
+Command line parameters: -f fastq -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC Ro_Rap_WT3_S13_L002_R1_001.fastq.gz
+Trimming 1 adapter with at most 10.0% errors in single-end mode ...
+Finished in 75.89 s (11 us/read; 5.57 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:               7,040,932
+Reads with adapters:                 2,086,682 (29.6%)
+Reads written (passing filters):     7,040,932 (100.0%)
+
+Total basepairs processed:   359,087,532 bp
+Quality-trimmed:                 281,551 bp (0.1%)
+Total written (filtered):    355,361,992 bp (99.0%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 2086682 times.
+
+No. of allowed errors:
+0-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 26.5%
+  C: 35.3%
+  G: 22.1%
+  T: 15.6%
+  none/other: 0.5%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	1434249	1760233.0	0	1434249
+2	490230	440058.2	0	490230
+3	120233	110014.6	0	120233
+4	23741	27503.6	0	23741
+5	5426	6875.9	0	5426
+6	465	1719.0	0	465
+7	253	429.7	0	253
+8	85	107.4	0	85
+9	193	26.9	0	81 112
+10	290	6.7	1	92 198
+11	132	1.7	1	59 73
+12	105	0.4	1	61 44
+13	98	0.1	1	70 28
+14	99	0.1	1	80 19
+15	105	0.1	1	80 25
+16	70	0.1	1	62 8
+17	65	0.1	1	49 16
+18	78	0.1	1	50 28
+19	64	0.1	1	48 16
+20	76	0.1	1	56 20
+21	65	0.1	1	51 14
+22	74	0.1	1	51 23
+23	61	0.1	1	40 21
+24	54	0.1	1	37 17
+25	48	0.1	1	36 12
+26	48	0.1	1	29 19
+27	51	0.1	1	36 15
+28	50	0.1	1	34 16
+29	54	0.1	1	39 15
+30	45	0.1	1	27 18
+31	32	0.1	1	24 8
+32	33	0.1	1	24 9
+33	26	0.1	1	18 8
+34	28	0.1	1	18 10
+35	22	0.1	1	11 11
+36	17	0.1	1	10 7
+37	12	0.1	1	8 4
+38	10	0.1	1	7 3
+39	11	0.1	1	7 4
+40	12	0.1	1	4 8
+41	10	0.1	1	5 5
+42	5	0.1	1	0 5
+43	7	0.1	1	2 5
+44	15	0.1	1	1 14
+45	14	0.1	1	0 14
+46	17	0.1	1	7 10
+47	9	0.1	1	0 9
+48	33	0.1	1	0 33
+49	72	0.1	1	3 69
+50	227	0.1	1	1 226
+51	9463	0.1	1	2 9461
+
+
+RUN STATISTICS FOR INPUT FILE: Ro_Rap_WT3_S13_L002_R1_001.fastq.gz
+=============================================
+7040932 sequences processed in total
+Sequences removed because they became shorter than the length cutoff of 20 bp:	10093 (0.1%)
+

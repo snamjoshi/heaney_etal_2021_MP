@@ -1,0 +1,65 @@
+Library,Input_Reads,Mapped_Reads,Multiple_Alignments,Mapping_Rate
+RO_KO2_T1,436922,1681695 (16.1% of input),262597 (15.6%) have multiple alignments (2824 have >20),16.1% overall read mapping rate
+RO_KO2_T2,399555,1669857 (16.1% of input),259492 (15.5%) have multiple alignments (2850 have >20),16.1% overall read mapping rate
+RO_KO2_T3,4787614,2450813 (16.6% of input),368002 (15.0%) have multiple alignments (3803 have >20),16.6% overall read mapping rate
+RO_KO2_T4,3990679,2300983 (16.4% of input),346817 (15.1%) have multiple alignments (3665 have >20),16.4% overall read mapping rate
+RO_RAP_KO1_T1,8253643,6019100 (72.9% of input),266277 ( 4.4%) have multiple alignments (6016 have >20),72.9% overall read mapping rate
+RO_RAP_KO1_T2,8140014,5939261 (73.0% of input),262278 ( 4.4%) have multiple alignments (5725 have >20),73.0% overall read mapping rate
+RO_RAP_KO1_T3,9524091,6995619 (73.5% of input),305427 ( 4.4%) have multiple alignments (6856 have >20),73.5% overall read mapping rate
+RO_RAP_KO1_T4,8983390,6572582 (73.2% of input),288631 ( 4.4%) have multiple alignments (6414 have >20),73.2% overall read mapping rate
+RO_RAP_KO2_T1,1539793,8766266 (76.0% of input),319761 ( 3.6%) have multiple alignments (8983 have >20),76.0% overall read mapping rate
+RO_RAP_KO2_T2,1447787,8700053 (76.0% of input),316601 ( 3.6%) have multiple alignments (9027 have >20),76.0% overall read mapping rate
+RO_RAP_KO2_T3,5235945,3947559 (75.4% of input),143273 ( 3.6%) have multiple alignments (3944 have >20),75.4% overall read mapping rate
+RO_RAP_KO2_T4,4919303,3702311 (75.3% of input),134411 ( 3.6%) have multiple alignments (3844 have >20),75.3% overall read mapping rate
+RO_RAP_KO3_T1,8735516,6400380 (73.3% of input),257305 ( 4.0%) have multiple alignments (6075 have >20),73.3% overall read mapping rate
+RO_RAP_KO3_T2,8640851,6332223 (73.3% of input),254386 ( 4.0%) have multiple alignments (6243 have >20),73.3% overall read mapping rate
+RO_RAP_KO3_T3,230114,7525326 (73.6% of input),299823 ( 4.0%) have multiple alignments (7155 have >20),73.6% overall read mapping rate
+RO_RAP_KO3_T4,9691348,7099356 (73.3% of input),283877 ( 4.0%) have multiple alignments (6674 have >20),73.3% overall read mapping rate
+RO_RAP_WT1_T1,9425580,7724004 (81.9% of input),303460 ( 3.9%) have multiple alignments (6986 have >20),81.9% overall read mapping rate
+RO_RAP_WT1_T2,9329940,7654190 (82.0% of input),300217 ( 3.9%) have multiple alignments (7003 have >20),82.0% overall read mapping rate
+RO_RAP_WT1_T3,3634272,1245616 (82.5% of input),438093 ( 3.9%) have multiple alignments (9835 have >20),82.5% overall read mapping rate
+RO_RAP_WT1_T4,2678561,0439522 (82.3% of input),407513 ( 3.9%) have multiple alignments (9285 have >20),82.3% overall read mapping rate
+RO_RAP_WT2_T1,9389927,8123176 (86.5% of input),351580 ( 4.3%) have multiple alignments (7475 have >20),86.5% overall read mapping rate
+RO_RAP_WT2_T2,9330571,8079876 (86.6% of input),347360 ( 4.3%) have multiple alignments (7363 have >20),86.6% overall read mapping rate
+RO_RAP_WT2_T3,3847304,2007470 (86.7% of input),513866 ( 4.3%) have multiple alignments (10799 have >20),86.7% overall read mapping rate
+RO_RAP_WT2_T4,2873233,1153808 (86.6% of input),479401 ( 4.3%) have multiple alignments (10103 have >20),86.6% overall read mapping rate
+RO_RAP_WT3_T1,7040228,6079509 (86.4% of input),250394 ( 4.1%) have multiple alignments (5687 have >20),86.4% overall read mapping rate
+RO_RAP_WT3_T2,7030839,6081444 (86.5% of input),249315 ( 4.1%) have multiple alignments (5671 have >20),86.5% overall read mapping rate
+RO_RAP_WT3_T3,1221288,9734448 (86.7% of input),397630 ( 4.1%) have multiple alignments (8795 have >20),86.7% overall read mapping rate
+RO_RAP_WT3_T4,504767,9106329 (86.7% of input),372397 ( 4.1%) have multiple alignments (8390 have >20),86.7% overall read mapping rate
+RO_WT1_T1,8568455,3342593 (39.0% of input),169058 ( 5.1%) have multiple alignments (3371 have >20),39.0% overall read mapping rate
+RO_WT1_T2,8499710,3312327 (39.0% of input),166781 ( 5.0%) have multiple alignments (3354 have >20),39.0% overall read mapping rate
+RO_WT1_T3,5282085,2120067 (40.1% of input),105757 ( 5.0%) have multiple alignments (2093 have >20),40.1% overall read mapping rate
+RO_WT1_T4,4971366,1982334 (39.9% of input), 99190 ( 5.0%) have multiple alignments (1965 have >20),39.9% overall read mapping rate
+RO_WT2_T1,973892,6620523 (60.3% of input),373447 ( 5.6%) have multiple alignments (7230 have >20),60.3% overall read mapping rate
+RO_WT2_T2,915550,6588832 (60.4% of input),370723 ( 5.6%) have multiple alignments (7226 have >20),60.4% overall read mapping rate
+RO_WT2_T3,9052870,5547590 (61.3% of input),305985 ( 5.5%) have multiple alignments (5996 have >20),61.3% overall read mapping rate
+RO_WT2_T4,8498721,5188183 (61.0% of input),288230 ( 5.6%) have multiple alignments (5487 have >20),61.0% overall read mapping rate
+RO_WT3_T1,7787301,4316206 (55.4% of input),214211 ( 5.0%) have multiple alignments (4352 have >20),55.4% overall read mapping rate
+RO_WT3_T2,7826769,4335492 (55.4% of input),214873 ( 5.0%) have multiple alignments (4176 have >20),55.4% overall read mapping rate
+RO_WT3_T3,5785648,8904061 (56.4% of input),433505 ( 4.9%) have multiple alignments (8688 have >20),56.4% overall read mapping rate
+RO_WT3_T4,4770198,8284395 (56.1% of input),405698 ( 4.9%) have multiple alignments (7942 have >20),56.1% overall read mapping rate
+SAL_KO1_T1,3511776,8400395 (62.2% of input),367135 ( 4.4%) have multiple alignments (7918 have >20),62.2% overall read mapping rate
+SAL_KO1_T2,3360188,8316829 (62.3% of input),360473 ( 4.3%) have multiple alignments (7674 have >20),62.3% overall read mapping rate
+SAL_KO1_T3,975474,6940636 (63.2% of input),299180 ( 4.3%) have multiple alignments (6224 have >20),63.2% overall read mapping rate
+SAL_KO1_T4,329254,6505272 (63.0% of input),280744 ( 4.3%) have multiple alignments (5822 have >20),63.0% overall read mapping rate
+SAL_KO2_T1,7887843,3637552 (46.1% of input),170507 ( 4.7%) have multiple alignments (3959 have >20),46.1% overall read mapping rate
+SAL_KO2_T2,7762342,3573960 (46.0% of input),167114 ( 4.7%) have multiple alignments (3983 have >20),46.0% overall read mapping rate
+SAL_KO2_T3,6240194,2939158 (47.1% of input),136039 ( 4.6%) have multiple alignments (3176 have >20),47.1% overall read mapping rate
+SAL_KO2_T4,5855520,2744507 (46.9% of input),127182 ( 4.6%) have multiple alignments (2999 have >20),46.9% overall read mapping rate
+SAL_KO3_T1,141624,5643660 (55.6% of input),245552 ( 4.4%) have multiple alignments (6223 have >20),55.6% overall read mapping rate
+SAL_KO3_T2,38776,5594173 (55.7% of input),243734 ( 4.4%) have multiple alignments (6240 have >20),55.7% overall read mapping rate
+SAL_KO3_T3,8361756,4687729 (56.1% of input),201693 ( 4.3%) have multiple alignments (4898 have >20),56.1% overall read mapping rate
+SAL_KO3_T4,7898366,4401197 (55.7% of input),189846 ( 4.3%) have multiple alignments (4498 have >20),55.7% overall read mapping rate
+SAL_WT1_T1,7366745,3421348 (46.4% of input),157656 ( 4.6%) have multiple alignments (3153 have >20),46.4% overall read mapping rate
+SAL_WT1_T2,7395787,3435923 (46.5% of input),157833 ( 4.6%) have multiple alignments (3378 have >20),46.5% overall read mapping rate
+SAL_WT1_T3,4801547,7044373 (47.6% of input),321113 ( 4.6%) have multiple alignments (6629 have >20),47.6% overall read mapping rate
+SAL_WT1_T4,3949727,6583332 (47.2% of input),300843 ( 4.6%) have multiple alignments (6339 have >20),47.2% overall read mapping rate
+SAL_WT2_T1,7165746,5338061 (74.5% of input),208504 ( 3.9%) have multiple alignments (5014 have >20),74.5% overall read mapping rate
+SAL_WT2_T2,7629193,5677267 (74.4% of input),221697 ( 3.9%) have multiple alignments (5335 have >20),74.4% overall read mapping rate
+SAL_WT2_T3,961778,8191623 (74.7% of input),317544 ( 3.9%) have multiple alignments (7634 have >20),74.7% overall read mapping rate
+SAL_WT2_T4,208678,7606487 (74.5% of input),295944 ( 3.9%) have multiple alignments (7055 have >20),74.5% overall read mapping rate
+SAL_WT3_T1,6961446,6083927 (87.4% of input),256953 ( 4.2%) have multiple alignments (6033 have >20),87.4% overall read mapping rate
+SAL_WT3_T2,6952007,6083490 (87.5% of input),255837 ( 4.2%) have multiple alignments (5831 have >20),87.5% overall read mapping rate
+SAL_WT3_T3,3979856,2259089 (87.7% of input),513653 ( 4.2%) have multiple alignments (11588 have >20),87.7% overall read mapping rate
+SAL_WT3_T4,2940141,1336402 (87.6% of input),476313 ( 4.2%) have multiple alignments (10925 have >20),87.6% overall read mapping rate

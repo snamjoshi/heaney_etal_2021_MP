@@ -1,0 +1,106 @@
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: Sal_WT1_S5_L002_R1_001.fastq.gz
+Trimming mode: single-end
+Trim Galore version: 0.4.1
+Cutadapt version: 1.10
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; auto-detected)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length before a sequence gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Output file will be GZIP compressed
+
+
+This is cutadapt 1.10 with Python 2.7.11+
+Command line parameters: -f fastq -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC Sal_WT1_S5_L002_R1_001.fastq.gz
+Trimming 1 adapter with at most 10.0% errors in single-end mode ...
+Finished in 89.36 s (12 us/read; 4.99 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:               7,428,181
+Reads with adapters:                 1,437,007 (19.3%)
+Reads written (passing filters):     7,428,181 (100.0%)
+
+Total basepairs processed:   378,837,231 bp
+Quality-trimmed:                 438,736 bp (0.1%)
+Total written (filtered):    374,743,619 bp (98.9%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 1437007 times.
+
+No. of allowed errors:
+0-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 22.8%
+  C: 30.2%
+  G: 31.8%
+  T: 13.0%
+  none/other: 2.2%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	958602	1857045.2	0	958602
+2	353732	464261.3	0	353732
+3	71285	116065.3	0	71285
+4	13477	29016.3	0	13477
+5	3240	7254.1	0	3240
+6	408	1813.5	0	408
+7	289	453.4	0	289
+8	158	113.3	0	158
+9	199	28.3	0	138 61
+10	338	7.1	1	190 148
+11	170	1.8	1	110 60
+12	192	0.4	1	134 58
+13	175	0.1	1	136 39
+14	175	0.1	1	146 29
+15	171	0.1	1	126 45
+16	140	0.1	1	116 24
+17	197	0.1	1	139 58
+18	175	0.1	1	135 40
+19	162	0.1	1	129 33
+20	157	0.1	1	118 39
+21	150	0.1	1	115 35
+22	165	0.1	1	123 42
+23	136	0.1	1	101 35
+24	118	0.1	1	94 24
+25	125	0.1	1	94 31
+26	126	0.1	1	102 24
+27	96	0.1	1	67 29
+28	101	0.1	1	80 21
+29	114	0.1	1	94 20
+30	90	0.1	1	74 16
+31	84	0.1	1	60 24
+32	67	0.1	1	42 25
+33	94	0.1	1	53 41
+34	68	0.1	1	38 30
+35	68	0.1	1	40 28
+36	39	0.1	1	23 16
+37	42	0.1	1	23 19
+38	36	0.1	1	26 10
+39	32	0.1	1	22 10
+40	44	0.1	1	7 37
+41	28	0.1	1	7 21
+42	37	0.1	1	7 30
+43	16	0.1	1	5 11
+44	76	0.1	1	5 71
+45	34	0.1	1	5 29
+46	46	0.1	1	14 32
+47	20	0.1	1	2 18
+48	135	0.1	1	1 134
+49	141	0.1	1	0 141
+50	719	0.1	1	2 717
+51	30518	0.1	1	2 30516
+
+
+RUN STATISTICS FOR INPUT FILE: Sal_WT1_S5_L002_R1_001.fastq.gz
+=============================================
+7428181 sequences processed in total
+Sequences removed because they became shorter than the length cutoff of 20 bp:	32394 (0.4%)
+

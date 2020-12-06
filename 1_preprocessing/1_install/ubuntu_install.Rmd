@@ -1,0 +1,217 @@
+---
+title: "Ubuntu Install Shell Script for Heaney et al. 2021"
+author: "Sanjeev V Namjoshi (snamjoshi87@utexas.edu)"
+date: "February 23rd, 2017 (revised June 15th, 2019)"
+output:
+  pdf_document: default
+  html_document: null
+  highlight: haddock
+  word_document: default
+keep_md: yes
+---
+
+This file contains the shell commands followed on a fresh Ubuntu install to add all software used during RNAseq analysis. This is provided for reproducibility. Note that the shell commands here do not form a complete shell script so they should not be run directly. Please modify as needed.
+
+## System basics
+
+```{r, engine = 'bash', eval = FALSE}
+# Install Zshell
+sudo apt-get install zsh
+sudo apt-get install git-core
+sudo wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+chsh -s `which zsh`
+sudo shutdown -r 0
+
+# Install dropbox
+sudo apt-get install nautilus-dropbox
+
+# Run dropbox to initiate download
+
+# Install Java/Oracle 8
+sudo apt-get update
+sudo apt-get install default-jre
+sudo apt-get install default-jdk
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+```
+
+## Python and pip
+
+```{r, engine = 'bash', eval = FALSE}
+# Install pip
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install python-pip
+
+# Install python 2.7.10
+sudo apt-get install build-essential checkinstall
+sudo apt-get install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+cd /usr/src
+sudo wget https://www.python.org/ftp/python/2.7.10/Python-2.7.10.tgz
+sudo tar xzf Python-2.7.10.tgz
+cd Python-2.7.10
+sudo ./configure
+sudo make altinstall
+sudo apt-get install python-dev
+```
+
+## R and R studio
+
+```{r, engine = 'bash', eval = FALSE}
+# Install R Base
+sudo echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | sudo tee -a /etc/apt/sources.list
+gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
+gpg -a --export E084DAB9 | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install r-base r-base-dev
+
+# Install R Studio 0.99.903
+sudo apt-get install gdebi-core
+wget https://download1.rstudio.org/rstudio-0.99.903-amd64.deb
+sudo gdebi -n rstudio-0.99.903-amd64.deb
+rm rstudio-0.99.903-amd64.deb
+```
+
+## RNAseq tools
+
+```{r, engine = 'bash', eval = FALSE}
+# Install FastQC 0.11.5
+cd /usr/src
+sudo curl -O http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip
+sudo unzip fastqc_v0.11.5.zip
+sudo ln -sf /usr/src/FastQC/fastqc /usr/bin/fastqc
+sudo chmod +x /usr/bin/fastqc
+
+# Install cutadapt 1.11
+sudo -H pip install cutadapt
+
+# Install Trim Galore 0.4.1
+cd /usr/src
+sudo curl -O http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/trim_galore_v0.4.1.zip
+sudo unzip trim_galore_v0.4.1.zipsudo ln -sf /usr/src/trim_galore_zip/trim_galore /usr/bin/trim_galore
+
+# Install Tophat 2.1.1
+cd /usr/src
+sudo curl -O https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz
+sudo tar xzvf tophat-2.1.1.Linux_x86_64.tar.gz
+
+# Install Bowtie 2.2.9
+cd /usr/src    
+sudo curl -OL http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9/bowtie2-2.2.9-linux-x86_64.zip
+sudo unzip bowtie2-2.2.9-linux-x86_64.zip
+
+# Install samtools 0.1.19
+cd /usr/src
+sudo curl -OL https://sourceforge.net/projects/samtools/files/samtools/0.1.19/samtools-0.1.19.tar.bz2
+sudo tar jxvf samtools-0.1.19.tar.bz2
+sudo chown $USER -R /usr/src/samtools-0.1.19
+cd samtools-0.1.19
+sudo make
+
+# Install Piranha 1.2.1
+cd /usr/src
+sudo curl -O http://smithlabresearch.org/downloads/piranha-1.2.1.tar.gz
+sudo tar xzvf piranha-1.2.1.tar.gz
+cd piranha-1.2.1
+sudo ./configure --with-bam_tools_headers="/usr/src/BAMTools/include/" \
+      --with-bam_tools_library="/usr/src/BAMTools/lib/"
+sudo make all
+sudo make install
+
+# Add the following paths to the zshell profile:
+export PATH=/usr/src/tophat-2.1.1.Linux_x86_64:$PATH
+export PATH=/usr/src/bowtie2-2.2.9:$PATH
+export PATH=/usr/src/samtools-0.1.19:$PATH
+export PATH=/usr/src/piranha-1.2.1:$PATH
+
+gedit /home/sanjeev/.zshrc
+
+# Install RSeQC 2.6.4
+sudo -H pip install RSeQC
+
+# Install CMake 3.6.2
+cd /usr/src
+sudo curl -O https://cmake.org/files/v3.6/cmake-3.6.2.tar.gz
+sudo tar xzvf cmake-3.6.2.tar.gz
+cd cmake-3.6.2
+sudo chmod u+x bootstrap
+sudo ./bootstrap
+sudo make
+sudo make install
+
+# Install BAMtools 2.4.1
+cd /usr/src
+sudo git clone git://github.com/pezmaster31/bamtools.git
+cd bamtools
+sudo mkdir build
+cd build
+cd cmake .. 
+sudo make
+
+# Install GSL-2.2.1
+cd /usr/src
+sudo curl -O http://gnu.mirrors.pair.com/gnu/gsl/gsl-2.2.1.tar.gz
+sudo tar xzvf gsl-2.2.1.tar.gz
+sudo ./configure
+sudo make
+sudo make install
+sudo apt-get install libgsl0-dev
+
+# Install BEDtools 2.25.0-1
+sudo apt-get install bedtools
+```
+
+## R and Bioconductor packages
+
+```{r, engine = 'bash', eval = FALSE}
+# Prepare to install R/Bioconductor packages
+sudo chown $USER -R /usr/lib/R
+sudo chown $USER -R /usr/share/R
+sudo apt-get update
+sudo apt-get install r-base-html r-base-latex r-cran-rgtk2 r-cran-rggobi r-cran-rgl libxml2-dev libcurl4-gnutls-dev
+
+# Install R packages
+install.packages("R.utils")
+install.packages("ggplot2")
+install.packages("RColorBrewer")
+install.packages("pheatmap")
+install.packages("reshape2")
+
+# Install Bioconductor and related packages
+source("http://bioconductor.org/biocLite.R")
+biocLite("org.Mm.eg.db")
+biocLite("DESeq2")
+biocLite("Rsubread")
+biocLite("genefilter")
+biocLite("edgeR")
+biocLite("AnnotationDbi")
+biocLite("RIPSeeker")
+biocLite("biomaRt")
+biocLite("ChIPpeakAnno")
+
+# Prepare to install R/Bioconductor packages
+sudo chown $USER -R /usr/lib/R
+sudo chown $USER -R /usr/share/R
+sudo apt-get update
+sudo apt-get install r-base-html r-base-latex r-cran-rgtk2 r-cran-rggobi r-cran-rgl libxml2-dev libcurl4-gnutls-dev
+
+# Install R packages
+install.packages("R.utils")
+install.packages("ggplot2")
+install.packages("RColorBrewer")
+install.packages("pheatmap")
+install.packages("reshape2")
+
+# Install Bioconductor and related packages
+source("http://bioconductor.org/biocLite.R")
+biocLite("org.Mm.eg.db")
+biocLite("DESeq2")
+biocLite("Rsubread")
+biocLite("genefilter")
+biocLite("edgeR")
+biocLite("AnnotationDbi")
+biocLite("RIPSeeker")
+biocLite("biomaRt")
+biocLite("ChIPpeakAnno")
+```
