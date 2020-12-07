@@ -1,0 +1,35 @@
+---
+title: "Table S4 generated from RNAseq data"
+author: "Sanjeev V Namjoshi (snamjoshi87@utexas.edu)"
+date: "December 6, 2020"
+output: pdf_document
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
+```
+
+This table is generated from the variable `heatmapDat` from figure 2B.
+
+## Table S4 
+
+The supplemental table was generated from the data in the piechart. The variable `heatmapDat` already contains the previous filtration criteria (FDR cutoff of 0.1 and a $log_2$ fold change between -2 and 2) so this criteria is consistent across all figures.
+
+```{r, echo = TRUE}
+upTable <-
+  heatmapDat %>% 
+  rownames_to_column("Gene") %>%
+  filter(`Saline/Ro` >= 0 & `Ro+Rapa/Ro` >= 0) %>%
+  column_to_rownames("Gene")
+  
+downTable <-
+  heatmapDat %>%
+  rownames_to_column("Gene") %>%
+  filter(`Saline/Ro` <= 0 & `Ro+Rapa/Ro` <= 0) %>%
+  column_to_rownames("Gene")
+
+# Export the tables to see them. They are included in the supplemental materials for the paper as well as in this repo folder.
+
+# write.csv(upTable, "112_upregulated.csv")
+# write.csv(downTable, "77_downregulated.csv")
+```

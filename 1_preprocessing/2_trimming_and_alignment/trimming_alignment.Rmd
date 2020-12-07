@@ -14,7 +14,7 @@ There are two different sets of technical replicates reflecting the runs from Ju
 
 ### Load packages
 
-```{r, eval = FALSE}
+```{r}
 library(R.utils)
 library(Rsubread)
 ```
@@ -24,7 +24,7 @@ library(Rsubread)
 
 QC was performed with FastQC **(version 0.11.5)** in the terminal. Then, all FASTQ files were moved to a new directory.
 
-```{r, eval = FALSE}
+```{r}
 system("fastqc *.gz")
 dir.create("fastqc")
 system("mv *.zip *.html fastqc")
@@ -37,7 +37,7 @@ The QC files show high-quality Q-scores across all sequences. There is minor ada
 
 Adaptor/quality trimming was performed with **Trim Galore (version 0.4.1)** using **Python 2.7.11**. Trim Galore is wrapped around **cutadapt 1.10** and has many known adaptors pre-loaded so they do not need to be specified in advance. The basic options for trim galore do not perform any aggressive trimming and in general, a high amount of trimming was not needed.
 
-```{r, eval = FALSE}
+```{r}
 dir.create("trimmed_fastqc")
 system("trim_galore --fastqc -o trimmed_fastqc *.gz")
 ```
@@ -47,7 +47,7 @@ system("trim_galore --fastqc -o trimmed_fastqc *.gz")
 
 For alignment, we first created a metatable to help organize all the different libraries which aids in downstream processing steps. The following code chunk also creates a new alignment directory:
 
-```{r, eval = FALSE}
+```{r}
 metaTable <- data.frame(LibraryName = c("DMSO1_T1", "DMSO1_T2", "DMSO2_T1", "DMSO2_T2",
                                         "RO_KO2_T1", "RO_KO2_T2",
                                         "RO_RAP_KO1_T1", "RO_RAP_KO1_T2", "RO_RAP_KO2_T1", "RO_RAP_KO2_T2", "RO_RAP_KO3_T1", "RO_RAP_KO3_T2",
@@ -69,7 +69,7 @@ setwd("alignment")
 
 Gene model annotations (mm9) were downloaded from Ensembl.org and pre-built reference indices were downloaded from the Illumina website.
 
-```{r, eval = FALSE}
+```{r}
 ### Gene model annotation
 URL1 <- "ftp://ftp.ensembl.org/pub/release-84/gtf/mus_musculus/Mus_musculus.GRCm38.84.gtf.gz"
 download.file(URL1, "Mus_musculus.GRCm38.84.gtf.gz")
@@ -84,7 +84,7 @@ untar("Mus_musculus_Ensembl_GRCm38.tar")
 
 To align reads to genome, we used **Tophat 2.1.1**, **Bowtie 2.2.9**, and **samtools 0.1.19**. The `gtf` and `index` variables are strings leading to the directory where these files are stored. The library type was specified as `fr-firststrand` in accordance with the library prep protocol.
 
-```{r, eval = FALSE}
+```{r}
 ### Move all trimmed FASTQ data files to the alignment directory
 setwd("..")
 system("mv *.gz alignment")
@@ -104,7 +104,7 @@ for(i in 1:length(tophat)) {
 
 We created a table from the alignment results file found in each Tophat alignment file. These data can be found in the `full_alignment_summary.csv` file.
 
-```{r, eval = FALSE}
+```{r}
 output = data.frame()
 
 for(i in 1:length(metaTable$LibraryName)) {
@@ -130,7 +130,7 @@ The alignment data shows that most libraries had relative strong alignment perce
 
 We used **Rsubread 1.20.6** to calculate counts. The `strandSpecific = 2` option was chosen in accordance with the library prep protocol. We used the `countMultiMappingReads = TRUE` option specifically for the purpose of counting ambiguously mapped reads. At this point, all BAM files from both runs (July 2016 and August 2016) were combined into one directory so that the the final output includes counts for four technical replicates.
 
-```{r, eval = FALSE}
+```{r}
 ### Create an extry column for counts and a new vector that contains the directory for all the BAM files from Tophat output
 metaTable$Counts <- paste(metaTable$LibraryName, "count", sep = ".")
 alignmentFilesDir <- file.path(getwd(), paste0(metaTable$LibraryName, "/", "accepted_hits.bam"))

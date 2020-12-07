@@ -1,0 +1,291 @@
+Term,PValue,Count,Cluster,Order,NegLogPValue,Direction,Category
+GO:0044763~single-organism cellular process,6.84E-10,721,11,1,9.164988375,Up,Other
+GO:0044699~single-organism process,3.23E-08,781,11,2,7.490293755,Up,Other
+GO:0007154~cell communication,4.28E-11,412,7,3,10.36864296,Up,Signal Transduction; Regulation
+GO:0023052~signaling,4.03E-11,409,7,4,10.39513371,Up,Signal Transduction; Regulation
+GO:0044700~single organism signaling,4.25E-11,407,7,5,10.37155081,Up,Signal Transduction; Regulation
+GO:0051716~cellular response to stimulus,5.30E-05,428,7,6,4.275743171,Up,Signal Transduction; Regulation
+GO:0048583~regulation of response to stimulus,2.65E-11,250,7,7,10.57629798,Up,Signal Transduction; Regulation
+GO:0007165~signal transduction,5.34E-06,357,7,8,5.27269925,Up,Signal Transduction; Regulation
+GO:0044710~single-organism metabolic process,5.85E-05,234,26,9,4.232676595,Up,Nucleotide Metabolism
+GO:0019637~organophosphate metabolic process,0.000938572,72,26,10,3.027532618,Up,Nucleotide Metabolism
+GO:0009259~ribonucleotide metabolic process,0.000222022,43,26,11,3.65360407,Up,Nucleotide Metabolism
+GO:0019693~ribose phosphate metabolic process,0.000364281,43,26,12,3.438563776,Up,Nucleotide Metabolism
+GO:0031279~regulation of cyclase activity,1.17E-05,14,26,13,4.930647453,Up,Nucleotide Metabolism
+GO:0045761~regulation of adenylate cyclase activity,0.00029856,11,26,14,3.524968824,Up,Nucleotide Metabolism
+GO:0051339~regulation of lyase activity,0.000354407,12,26,15,3.450497876,Up,Nucleotide Metabolism
+GO:0072521~purine-containing compound metabolic process,0.000990206,44,26,16,3.004274415,Up,Nucleotide Metabolism
+GO:0009150~purine ribonucleotide metabolic process,0.000407505,41,26,17,3.389866675,Up,Nucleotide Metabolism
+GO:0006163~purine nucleotide metabolic process,0.000666474,42,26,18,3.176216635,Up,Nucleotide Metabolism
+GO:1900371~regulation of purine nucleotide biosynthetic process,2.60E-05,20,26,19,4.58427789,Up,Nucleotide Metabolism
+GO:0030808~regulation of nucleotide biosynthetic process,2.91E-05,20,26,20,4.535950282,Up,Nucleotide Metabolism
+GO:0030799~regulation of cyclic nucleotide metabolic process,0.000121481,20,26,21,3.915490869,Up,Nucleotide Metabolism
+GO:0052652~cyclic purine nucleotide metabolic process,0.000847569,18,26,22,3.071824969,Up,Nucleotide Metabolism
+GO:0030802~regulation of cyclic nucleotide biosynthetic process,3.65E-05,19,26,23,4.437199308,Up,Nucleotide Metabolism
+GO:0009190~cyclic nucleotide biosynthetic process,0.000357943,19,26,24,3.44618569,Up,Nucleotide Metabolism
+GO:1900542~regulation of purine nucleotide metabolic process,0.000576312,23,26,25,3.239342315,Up,Nucleotide Metabolism
+GO:0006140~regulation of nucleotide metabolic process,0.000915512,23,26,26,3.038335973,Up,Nucleotide Metabolism
+GO:0030817~regulation of cAMP biosynthetic process,0.000248426,16,26,27,3.60480382,Up,Nucleotide Metabolism
+GO:0006171~cAMP biosynthetic process,0.0005599,16,26,28,3.25188918,Up,Nucleotide Metabolism
+GO:0046058~cAMP metabolic process,0.000229544,19,26,29,3.639133687,Up,Nucleotide Metabolism
+GO:0009187~cyclic nucleotide metabolic process,0.000242911,23,26,30,3.614552023,Up,Nucleotide Metabolism
+GO:0060627~regulation of vesicle-mediated transport,3.14E-11,60,8,31,10.5026785,Up,Exocytosis and Secretion
+GO:0017156~calcium ion regulated exocytosis,5.76E-09,23,8,32,8.239683135,Up,Exocytosis and Secretion
+GO:0017158~regulation of calcium ion-dependent exocytosis,1.70E-08,18,8,33,7.770221424,Up,Exocytosis and Secretion
+GO:0045055~regulated exocytosis,6.50E-08,30,8,34,7.187201113,Up,Exocytosis and Secretion
+GO:0017157~regulation of exocytosis,4.58E-10,32,8,35,9.33886664,Up,Exocytosis and Secretion
+GO:0006887~exocytosis,4.36E-09,43,8,36,8.360270327,Up,Exocytosis and Secretion
+GO:1903305~regulation of regulated secretory pathway,1.98E-07,22,8,37,6.70370432,Up,Exocytosis and Secretion
+GO:0032940~secretion by cell,1.61E-10,95,8,38,9.792040637,Up,Exocytosis and Secretion
+GO:0046903~secretion,2.43E-08,98,8,39,7.614215082,Up,Exocytosis and Secretion
+GO:0051050~positive regulation of transport,7.79E-07,88,8,40,6.108304464,Up,Exocytosis and Secretion
+GO:0051047~positive regulation of secretion,0.000321311,40,8,41,3.493074626,Up,Exocytosis and Secretion
+GO:1903532~positive regulation of secretion by cell,0.00064141,37,8,42,3.192864509,Up,Exocytosis and Secretion
+GO:1903530~regulation of secretion by cell,2.15E-08,72,8,43,7.666749656,Up,Exocytosis and Secretion
+GO:0051046~regulation of secretion,8.19E-08,74,8,44,7.086701805,Up,Exocytosis and Secretion
+GO:0045921~positive regulation of exocytosis,8.37E-06,17,8,45,5.077507897,Up,Exocytosis and Secretion
+GO:0045956~positive regulation of calcium ion-dependent exocytosis,0.000484558,7,8,46,3.314654323,Up,Exocytosis and Secretion
+GO:1903307~positive regulation of regulated secretory pathway,0.00085055,10,8,47,3.070300167,Up,Exocytosis and Secretion
+GO:0007267~cell-cell signaling,7.63E-20,145,1,48,19.11774698,Up,Synaptic Transmission
+GO:0099536~synaptic signaling,4.85E-24,94,1,49,23.31412025,Up,Synaptic Transmission
+GO:0099537~trans-synaptic signaling,4.85E-24,94,1,50,23.31412025,Up,Transsynaptic Signaling
+GO:0007268~chemical synaptic transmission,4.85E-24,94,1,51,23.31412025,Up,Transsynaptic Signaling
+GO:0098916~anterograde trans-synaptic signaling,4.85E-24,94,1,52,23.31412025,Up,Transsynaptic Signaling
+GO:0051656~establishment of organelle localization,4.79E-09,47,5,53,8.319709383,Up,Synaptic Vesicle Localization
+GO:0051650~establishment of vesicle localization,1.49E-11,35,5,54,10.8256719,Up,Synaptic Vesicle Localization
+GO:0097479~synaptic vesicle localization,9.00E-11,28,5,55,10.04560543,Up,Synaptic Vesicle Localization
+GO:0097480~establishment of synaptic vesicle localization,1.23E-10,27,5,56,9.910871361,Up,Synaptic Vesicle Localization
+GO:0048489~synaptic vesicle transport,1.23E-10,27,5,57,9.910871361,Up,Synaptic Vesicle Localization
+GO:0023061~signal release,7.07E-07,49,5,58,6.150722707,Up,Synaptic Transmission
+GO:0051588~regulation of neurotransmitter transport,1.89E-06,16,5,59,5.72305326,Up,Synaptic Transmission
+GO:0099531~presynaptic process involved in chemical synaptic transmission,1.43E-09,26,5,60,8.84395364,Up,Synaptic Transmission
+GO:0099643~signal release from synapse,5.56E-10,26,5,61,9.255121321,Up,Synaptic Transmission
+GO:0007269~neurotransmitter secretion,5.56E-10,26,5,62,9.255121321,Up,Synaptic Transmission
+GO:0006836~neurotransmitter transport,1.27E-11,35,5,63,10.89761511,Up,Synaptic Transmission
+GO:0001505~regulation of neurotransmitter levels,3.35E-11,35,5,64,10.4746021,Up,Synaptic Transmission
+GO:2000300~regulation of synaptic vesicle exocytosis,1.57E-05,9,5,65,4.804325826,Up,Exocytosis and Secretion
+GO:1902803~regulation of synaptic vesicle transport,1.63E-05,10,5,66,4.786702084,Up,Exocytosis and Secretion
+GO:0016079~synaptic vesicle exocytosis,6.25E-07,17,5,67,6.204413707,Up,Exocytosis and Secretion
+GO:0099504~synaptic vesicle cycle,6.21E-08,22,5,68,7.207224382,Up,Exocytosis and Secretion
+GO:0099003~vesicle mediated transport in synapse,1.54E-07,20,5,69,6.813047859,Up,Exocytosis and Secretion
+GO:0045732~positive regulation of protein catabolic process,0.000321735,22,20,70,3.492501733,Up,Regulation of Protein Catabolism
+GO:1901800~positive regulation of proteasomal protein catabolic process,1.08E-05,16,20,71,4.966488731,Up,Regulation of Protein Catabolism
+GO:0032436~positive regulation of proteasomal ubiquitin-dependent protein catabolic process,1.16E-05,15,20,72,4.937230036,Up,Regulation of Protein Catabolism
+GO:1903052~positive regulation of proteolysis involved in cellular protein catabolic process,1.73E-05,17,20,73,4.761215324,Up,Regulation of Protein Catabolism
+GO:1903364~positive regulation of cellular protein catabolic process,2.81E-05,18,20,74,4.551792075,Up,Regulation of Protein Catabolism
+GO:0032434~regulation of proteasomal ubiquitin-dependent protein catabolic process,8.33E-06,19,20,75,5.079443123,Up,Regulation of Protein Catabolism
+GO:1903362~regulation of cellular protein catabolic process,1.72E-06,27,20,76,5.765395718,Up,Regulation of Protein Catabolism
+GO:0061136~regulation of proteasomal protein catabolic process,5.53E-07,24,20,77,6.257494937,Up,Regulation of Protein Catabolism
+GO:1903050~regulation of proteolysis involved in cellular protein catabolic process,1.96E-06,25,20,78,5.707982275,Up,Regulation of Protein Catabolism
+GO:0031329~regulation of cellular catabolic process,3.13E-05,35,20,79,4.505022227,Up,Regulation of Protein Catabolism
+GO:0042176~regulation of protein catabolic process,1.60E-06,38,20,80,5.796155255,Up,Regulation of Protein Catabolism
+GO:0009894~regulation of catabolic process,9.71E-06,47,20,81,5.012861451,Up,Regulation of Protein Catabolism
+GO:1990138~neuron projection extension,4.93E-05,22,24,82,4.306741091,Up,Cell Differentiation and Morphogenesis
+GO:0045773~positive regulation of axon extension,0.000623689,10,24,83,3.205032142,Up,Cell Differentiation and Morphogenesis
+GO:0030516~regulation of axon extension,0.000802901,15,24,84,3.095338102,Up,Cell Differentiation and Morphogenesis
+GO:0060560~developmental growth involved in morphogenesis,6.99E-06,30,24,85,5.155533616,Up,Cell Differentiation and Morphogenesis
+GO:0048589~developmental growth,0.00031385,59,24,86,3.503278306,Up,Cell Differentiation and Morphogenesis
+GO:0016049~cell growth,3.06E-05,46,24,87,4.514829846,Up,Cell Differentiation and Morphogenesis
+GO:0040007~growth,0.000207857,80,24,88,3.682235773,Up,Cell Differentiation and Morphogenesis
+GO:0040008~regulation of growth,0.000118574,59,24,89,3.926010086,Up,Cell Differentiation and Morphogenesis
+GO:0001558~regulation of cell growth,0.000285184,39,24,90,3.544875337,Up,Cell Differentiation and Morphogenesis
+GO:0030154~cell differentiation,1.46E-09,289,12,91,8.836911325,Up,Cell Differentiation and Morphogenesis
+GO:0048869~cellular developmental process,3.96E-09,305,12,92,8.402639895,Up,Cell Differentiation and Morphogenesis
+GO:0009653~anatomical structure morphogenesis,1.02E-07,199,4,93,6.990874421,Up,Cell Differentiation and Morphogenesis
+GO:0022603~regulation of anatomical structure morphogenesis,2.46E-06,88,4,94,5.609779527,Up,Cell Differentiation and Morphogenesis
+GO:0010769~regulation of cell morphogenesis involved in differentiation,1.12E-06,43,4,95,5.949712078,Up,Cell Differentiation and Morphogenesis
+GO:0050770~regulation of axonogenesis,1.28E-05,25,4,96,4.892379501,Up,Cell Differentiation and Morphogenesis
+GO:0010770~positive regulation of cell morphogenesis involved in differentiation,3.89E-06,27,4,97,5.409617629,Up,Cell Differentiation and Morphogenesis
+GO:0050772~positive regulation of axonogenesis,3.53E-05,15,4,98,4.452714546,Up,Cell Differentiation and Morphogenesis
+GO:0051239~regulation of multicellular organismal process,6.65E-11,217,4,99,10.17700897,Up,Cell Differentiation and Morphogenesis
+GO:0050775~positive regulation of dendrite morphogenesis,8.62E-05,11,4,100,4.064270105,Up,Cell Differentiation and Morphogenesis
+GO:0045597~positive regulation of cell differentiation,1.43E-12,104,4,101,11.84392806,Up,Cell Differentiation and Morphogenesis
+GO:0051240~positive regulation of multicellular organismal process,2.25E-07,128,4,102,6.647718673,Up,Cell Differentiation and Morphogenesis
+GO:1902578~single-organism localization,9.93E-20,280,2,103,19.00285918,Up,Protein Localization
+GO:0044765~single-organism transport,5.57E-18,262,2,104,17.25403024,Up,Regulation of Transport/Ion Transport
+GO:0006816~calcium ion transport,0.00092078,34,9,105,3.03584399,Up,Regulation of Transport/Ion Transport
+GO:0070838~divalent metal ion transport,0.000613733,38,9,106,3.212020698,Up,Regulation of Transport/Ion Transport
+GO:0072511~divalent inorganic cation transport,0.000710732,38,9,107,3.148294292,Up,Regulation of Transport/Ion Transport
+GO:1902305~regulation of sodium ion transmembrane transport,0.000214559,11,9,108,3.668453753,Up,Regulation of Transport/Ion Transport
+GO:0006814~sodium ion transport,0.000327384,23,9,109,3.484942981,Up,Regulation of Transport/Ion Transport
+GO:0002028~regulation of sodium ion transport,0.000396906,14,9,110,3.401312556,Up,Regulation of Transport/Ion Transport
+GO:0006811~ion transport,1.54E-10,124,9,111,9.813627018,Up,Regulation of Transport/Ion Transport
+GO:0006812~cation transport,1.45E-05,77,9,112,4.838934901,Up,Regulation of Transport/Ion Transport
+GO:0030001~metal ion transport,2.52E-05,68,9,113,4.598643156,Up,Regulation of Transport/Ion Transport
+GO:0034220~ion transmembrane transport,2.66E-07,68,9,114,6.574477466,Up,Regulation of Transport/Ion Transport
+GO:0055085~transmembrane transport,7.47E-06,84,9,115,5.126850964,Up,Regulation of Transport/Ion Transport
+GO:0010959~regulation of metal ion transport,8.73E-06,40,9,116,5.058885907,Up,Regulation of Transport/Ion Transport
+GO:1904062~regulation of cation transmembrane transport,2.10E-05,29,9,117,4.678707819,Up,Regulation of Transport/Ion Transport
+GO:1901698~response to nitrogen compound,2.55E-06,86,14,118,5.593680867,Up,Response to Compound or Stimulus
+GO:0010243~response to organonitrogen compound,7.60E-06,76,14,119,5.119362737,Up,Response to Compound or Stimulus
+GO:0042220~response to cocaine,2.85E-06,14,14,120,5.544583501,Up,Response to Compound or Stimulus
+GO:0043279~response to alkaloid,1.42E-05,23,14,121,4.846547602,Up,Response to Compound or Stimulus
+GO:0070887~cellular response to chemical stimulus,2.62E-05,178,14,122,4.582492504,Up,Response to Compound or Stimulus
+GO:0071310~cellular response to organic substance,0.000707942,140,14,123,3.150002398,Up,Response to Compound or Stimulus
+GO:0009725~response to hormone,3.09E-05,70,14,124,4.509504079,Up,Response to Compound or Stimulus
+GO:0071407~cellular response to organic cyclic compound,2.63E-05,50,14,125,4.580581805,Up,Response to Compound or Stimulus
+GO:0030518~intracellular steroid hormone receptor signaling pathway,2.81E-05,18,14,126,4.551792075,Up,Response to Compound or Stimulus
+GO:0043401~steroid hormone mediated signaling pathway,0.000296047,20,14,127,3.528638627,Up,Response to Compound or Stimulus
+GO:0042221~response to chemical,5.99E-06,266,14,128,5.222721864,Up,Response to Compound or Stimulus
+GO:0014070~response to organic cyclic compound,2.82E-08,93,14,129,7.549614751,Up,Response to Compound or Stimulus
+GO:0009719~response to endogenous stimulus,6.01E-07,127,14,130,6.221330867,Up,Response to Compound or Stimulus
+GO:0010033~response to organic substance,1.07E-06,207,14,131,5.972397388,Up,Response to Compound or Stimulus
+GO:0006796~phosphate-containing compound metabolic process,2.10E-11,223,6,132,10.67873679,Up,Regulation of Phosphorylation
+GO:0006793~phosphorus metabolic process,2.45E-11,223,6,133,10.61099595,Up,Regulation of Phosphorylation
+GO:0032270~positive regulation of cellular protein metabolic process,2.16E-05,103,6,134,4.665954951,Up,Regulation of Phosphorylation
+GO:0051247~positive regulation of protein metabolic process,3.19E-05,108,6,135,4.496041748,Up,Regulation of Phosphorylation
+GO:0051338~regulation of transferase activity,2.58E-05,67,6,136,4.587811207,Up,Regulation of Phosphorylation
+GO:0043549~regulation of kinase activity,1.89E-05,61,6,137,4.724017621,Up,Regulation of Phosphorylation
+GO:0045859~regulation of protein kinase activity,0.000439901,52,6,138,3.356645152,Up,Regulation of Phosphorylation
+GO:0016310~phosphorylation,7.13E-08,159,6,139,7.14716322,Up,Regulation of Phosphorylation
+GO:0006468~protein phosphorylation,2.56E-06,132,6,140,5.590962015,Up,Regulation of Phosphorylation
+GO:0031401~positive regulation of protein modification process,0.000494488,81,6,141,3.305843815,Up,Regulation of Phosphorylation
+GO:0042325~regulation of phosphorylation,1.02E-05,109,6,142,4.991883231,Up,Regulation of Phosphorylation
+GO:0001932~regulation of protein phosphorylation,0.000112552,98,6,143,3.94864624,Up,Regulation of Phosphorylation
+GO:0022029~telencephalon cell migration,0.000466558,12,15,144,3.331094274,Up,Cerebral Development
+GO:0021885~forebrain cell migration,0.000689399,12,15,145,3.161529281,Up,Cerebral Development
+GO:0021819~layer formation in cerebral cortex,0.000666793,6,15,146,3.176008853,Up,Cerebral Development
+GO:0021801~cerebral cortex radial glia guided migration,0.000484558,7,15,147,3.314654323,Up,Cerebral Development
+GO:0022030~telencephalon glial cell migration,0.000484558,7,15,148,3.314654323,Up,Cerebral Development
+GO:0021761~limbic system development,0.000239083,17,15,149,3.621452117,Up,Cerebral Development
+GO:0021987~cerebral cortex development,0.00035513,17,15,150,3.449612944,Up,Cerebral Development
+GO:0021543~pallium development,4.20E-05,24,15,151,4.377162818,Up,Cerebral Development
+GO:0030900~forebrain development,3.30E-08,50,15,152,7.481987303,Up,Cerebral Development
+GO:0021537~telencephalon development,4.28E-05,31,15,153,4.368244408,Up,Cerebral Development
+GO:0050790~regulation of catalytic activity,3.69E-10,143,10,154,9.432402839,Up,Regulation of Catalytic Activity
+GO:0044093~positive regulation of molecular function,4.81E-07,106,10,155,6.318039179,Up,Regulation of Catalytic Activity
+GO:0043085~positive regulation of catalytic activity,3.38E-06,83,10,156,5.47170343,Up,Regulation of Catalytic Activity
+GO:0043087~regulation of GTPase activity,8.95E-06,34,10,157,5.048020383,Up,Regulation of Catalytic Activity
+GO:0051336~regulation of hydrolase activity,2.72E-05,75,10,158,4.565044713,Up,Regulation of Catalytic Activity
+GO:0051345~positive regulation of hydrolase activity,0.000254716,43,10,159,3.593944407,Up,Regulation of Catalytic Activity
+GO:0043547~positive regulation of GTPase activity,0.000378399,24,10,160,3.422050237,Up,Regulation of Catalytic Activity
+GO:0006915~apoptotic process,0.000377271,123,29,161,3.423346409,Up,Stress and Apoptosis
+GO:0008219~cell death,0.000541375,135,29,162,3.266502048,Up,Stress and Apoptosis
+GO:1901216~positive regulation of neuron death,7.78E-05,16,29,163,4.109280344,Up,Stress and Apoptosis
+GO:0051402~neuron apoptotic process,6.08E-05,30,29,164,4.215779706,Up,Stress and Apoptosis
+GO:0043523~regulation of neuron apoptotic process,0.000161114,28,29,165,3.792867799,Up,Stress and Apoptosis
+GO:1901214~regulation of neuron death,0.00012619,34,29,166,3.89897473,Up,Stress and Apoptosis
+GO:0070997~neuron death,0.000290549,35,29,167,3.536781009,Up,Stress and Apoptosis
+GO:0007616~long-term memory,5.54E-07,12,3,168,6.256821893,Up,Learning and Behavior
+GO:0007613~memory,6.34E-05,19,3,169,4.197598469,Up,Learning and Behavior
+GO:0007610~behavior,5.65E-17,92,3,170,16.24764534,Up,Learning and Behavior
+GO:0050890~cognition,4.03E-13,50,3,171,12.39479405,Up,Learning and Behavior
+GO:0007611~learning or memory,5.20E-13,47,3,172,12.28402001,Up,Learning and Behavior
+GO:0007612~learning,2.46E-10,32,3,173,9.609388913,Up,Learning and Behavior
+GO:0008306~associative learning,7.38E-06,18,3,174,5.132160571,Up,Learning and Behavior
+GO:0034109~homotypic cell-cell adhesion,0.000146412,14,30,175,3.834424341,Up,Cell Adhesion/Aggregation
+GO:0070527~platelet aggregation,0.00085055,10,30,176,3.070300167,Up,Cell Adhesion/Aggregation
+GO:0098609~cell-cell adhesion,0.000532803,82,30,177,3.273433663,Up,Cell Adhesion/Aggregation
+GO:0022610~biological adhesion,0.000414465,112,30,178,3.382511986,Up,Cell Adhesion/Aggregation
+GO:0007155~cell adhesion,0.000471115,111,30,179,3.326873376,Up,Cell Adhesion/Aggregation
+GO:0032469~endoplasmic reticulum calcium ion homeostasis,0.000825927,7,27,180,3.083058214,Up,Ion Homeostasis
+GO:0050801~ion homeostasis,0.00042734,59,27,181,3.369226589,Up,Ion Homeostasis
+GO:0042592~homeostatic process,7.08E-05,123,27,182,4.15010824,Up,Ion Homeostasis
+GO:0019725~cellular homeostasis,4.93E-05,72,27,183,4.306717969,Up,Ion Homeostasis
+GO:0055082~cellular chemical homeostasis,0.000544831,61,27,184,3.263738389,Up,Ion Homeostasis
+GO:1902533~positive regulation of intracellular signal transduction,0.000852877,69,21,185,3.069113777,Up,Signal Transduction; Regulation
+GO:0023056~positive regulation of signaling,5.80E-07,120,21,186,6.236719482,Up,Signal Transduction; Regulation
+GO:0010647~positive regulation of cell communication,8.25E-07,119,21,187,6.083662589,Up,Signal Transduction; Regulation
+GO:0009967~positive regulation of signal transduction,7.68E-05,100,21,188,4.114701757,Up,Signal Transduction; Regulation
+GO:0048584~positive regulation of response to stimulus,0.000198897,128,21,189,3.70137116,Up,Signal Transduction; Regulation
+GO:0010469~regulation of receptor activity,3.13E-06,20,16,190,5.504148899,Up,Regulation of Receptor Activity
+GO:2000310~regulation of N-methyl-D-aspartate selective glutamate receptor activity,8.91E-05,7,16,191,4.050330365,Up,Regulation of Receptor Activity
+GO:2000311~regulation of alpha-amino-3-hydroxy-5-methyl-4-isoxazole propionate selective glutamate receptor activity,4.98E-06,9,16,192,5.302914029,Up,Regulation of Receptor Activity
+GO:0099601~regulation of neurotransmitter receptor activity,3.78E-08,13,16,193,7.422829821,Up,Regulation of Receptor Activity
+GO:1900449~regulation of glutamate receptor signaling pathway,3.78E-08,13,16,194,7.422829821,Up,Regulation of Receptor Activity
+GO:0007166~cell surface receptor signaling pathway,5.10E-07,168,16,195,6.292139167,Up,Regulation of Receptor Activity
+GO:1905114~cell surface receptor signaling pathway involved in cell-cell signaling,5.20E-07,51,16,196,6.284219199,Up,Regulation of Receptor Activity
+GO:0016055~Wnt signaling pathway,0.000874064,36,16,197,3.058456961,Up,Regulation of Receptor Activity
+GO:0198738~cell-cell signaling by wnt,0.000910834,36,16,198,3.040560775,Up,Regulation of Receptor Activity
+GO:0072384~organelle transport along microtubule,4.38E-06,14,23,199,5.358572025,Up,Microtuble Transport
+GO:0030705~cytoskeleton-dependent intracellular transport,1.30E-05,17,23,200,4.884702158,Up,Microtuble Transport
+GO:0010970~establishment of localization by movement along microtubule,0.000101229,17,23,201,3.994693224,Up,Microtuble Transport
+GO:1902582~single-organism intracellular transport,3.62E-05,54,23,202,4.441074406,Up,Microtuble Transport
+GO:0008088~axo-dendritic transport,0.00014659,10,23,203,3.833894329,Up,Microtuble Transport
+GO:0032880~regulation of protein localization,8.88E-08,91,18,204,7.051650562,Up,Metabotropic Receptor Regulation
+GO:0070201~regulation of establishment of protein localization,0.000852617,65,18,205,3.069246026,Up,Metabotropic Receptor Regulation
+GO:1903827~regulation of cellular protein localization,4.02E-06,55,18,206,5.396106521,Up,Metabotropic Receptor Regulation
+GO:0032386~regulation of intracellular transport,0.000450898,43,18,207,3.345921301,Up,Metabotropic Receptor Regulation
+GO:0051056~regulation of small GTPase mediated signal transduction,2.46E-08,35,13,208,7.608342765,Up,Metabotropic Receptor Regulation
+GO:0046578~regulation of Ras protein signal transduction,7.48E-07,30,13,209,6.126049427,Up,Metabotropic Receptor Regulation
+GO:0007264~small GTPase mediated signal transduction,1.05E-08,58,13,210,7.97706474,Up,Metabotropic Receptor Regulation
+GO:0007265~Ras protein signal transduction,2.11E-06,37,13,211,5.674961093,Up,Metabotropic Receptor Regulation
+GO:0010648~negative regulation of cell communication,7.32E-08,102,13,212,7.135426318,Up,Negative Regulation of Signal Transduction
+GO:0023057~negative regulation of signaling,8.26E-08,102,13,213,7.083015796,Up,Negative Regulation of Signal Transduction
+GO:0009968~negative regulation of signal transduction,3.25E-06,87,13,214,5.488711869,Up,Negative Regulation of Signal Transduction
+GO:0048585~negative regulation of response to stimulus,5.57E-05,102,13,215,4.254036121,Up,Negative Regulation of Signal Transduction
+GO:0042982~amyloid precursor protein metabolic process,5.53E-05,9,28,216,4.25746614,Up,Regulation of Protein Catabolism
+GO:0042987~amyloid precursor protein catabolic process,0.000264473,7,28,217,3.577618585,Up,Regulation of Protein Catabolism
+GO:1902991~regulation of amyloid precursor protein catabolic process,0.000666793,6,28,218,3.176008853,Up,Regulation of Protein Catabolism
+GO:0022411~cellular component disassembly,0.000107919,40,25,219,3.966901146,Up,Protein Complex Disassembly
+GO:0032984~macromolecular complex disassembly,1.01E-05,24,25,220,4.997803563,Up,Protein Complex Disassembly
+GO:0043241~protein complex disassembly,1.04E-05,23,25,221,4.983002503,Up,Protein Complex Disassembly
+GO:1902589~single-organism organelle organization,0.000609889,118,17,222,3.214749511,Up,Actin Dynamics
+GO:0030029~actin filament-based process,1.65E-05,60,17,223,4.782340406,Up,Actin Dynamics
+GO:0030036~actin cytoskeleton organization,0.000284452,49,17,224,3.54599151,Up,Actin Dynamics
+GO:0080135~regulation of cellular response to stress,0.000321056,48,17,225,3.493419003,Up,Stress and Apoptosis
+GO:0034976~response to endoplasmic reticulum stress,4.12E-06,29,17,226,5.38503635,Up,Stress and Apoptosis
+GO:0097190~apoptotic signaling pathway,0.000403508,50,17,227,3.394147338,Up,Stress and Apoptosis
+GO:1902235~regulation of endoplasmic reticulum stress-induced intrinsic apoptotic signaling pathway,0.000316707,8,17,228,3.499342494,Up,Stress and Apoptosis
+GO:0070059~intrinsic apoptotic signaling pathway in response to endoplasmic reticulum stress,0.000729776,11,17,229,3.13681057,Up,Stress and Apoptosis
+GO:0016241~regulation of macroautophagy,0.000138035,15,17,230,3.860009428,Up,Regulation of Autophagy
+GO:0010506~regulation of autophagy,0.000378399,24,17,231,3.422050237,Up,Regulation of Autophagy
+GO:0042063~gliogenesis,1.85E-07,38,17,232,6.732950885,Up,Astrocyte Differentiation and Gliogenesis
+GO:0010001~glial cell differentiation,4.63E-05,27,17,233,4.334885763,Up,Astrocyte Differentiation and Gliogenesis
+GO:0048708~astrocyte differentiation,0.000994338,12,17,234,3.002466014,Up,Astrocyte Differentiation and Gliogenesis
+GO:0018193~peptidyl-amino acid modification,1.78E-05,82,17,235,4.749397222,Up,Protein Modification
+GO:0018105~peptidyl-serine phosphorylation,0.000127972,30,17,236,3.892885138,Up,Protein Modification
+GO:0018209~peptidyl-serine modification,0.000340633,30,17,237,3.467712731,Up,Protein Modification
+GO:0007270~neuron-neuron synaptic transmission,7.06E-05,19,17,238,4.151446171,Up,Synaptic Transmission
+"GO:0035249~synaptic transmission, glutamatergic",0.000354407,12,17,239,3.450497876,Up,Synaptic Transmission
+GO:0050805~negative regulation of synaptic transmission,3.92E-05,14,17,240,4.406556582,Up,Synaptic Transmission
+"GO:0099565~chemical synaptic transmission, postsynaptic",7.82E-06,16,17,241,5.106728311,Up,Synaptic Transmission
+GO:1900271~regulation of long-term synaptic potentiation,0.000187458,8,17,242,3.727096344,Up,Synaptic Transmission
+GO:0048168~regulation of neuronal synaptic plasticity,8.11E-05,13,17,243,4.090741086,Up,Synaptic Transmission
+"GO:0051966~regulation of synaptic transmission, glutamatergic",0.00019669,12,17,244,3.706218274,Up,Synaptic Transmission
+GO:0006897~endocytosis,7.33E-07,55,17,245,6.13479433,Up,Endocytosis
+GO:0030100~regulation of endocytosis,0.000944849,24,17,246,3.024637448,Up,Endocytosis
+GO:0007626~locomotory behavior,6.19E-08,36,17,247,7.208526388,Up,Other
+GO:0030534~adult behavior,0.000254983,22,17,248,3.593488464,Up,Other
+GO:0000209~protein polyubiquitination,0.000460156,21,17,249,3.337094457,Up,Protein Modification
+GO:0051259~protein oligomerization,6.38E-05,49,17,250,4.194869809,Up,Protein Complex Assembly
+GO:0007034~vacuolar transport,8.58E-05,30,17,251,4.066405235,Up,Other
+GO:0060996~dendritic spine development,6.40E-07,19,17,252,6.193830181,Up,Other
+GO:0060998~regulation of dendritic spine development,0.000198483,13,17,253,3.70227604,Up,Other
+GO:0001941~postsynaptic membrane organization,0.000304716,9,17,254,3.516104641,Up,Other
+GO:0051668~localization within membrane,0.000494421,13,17,255,3.305902734,Up,Other
+GO:0051051~negative regulation of transport,3.26E-05,49,17,256,4.487357559,Up,Other
+GO:0043271~negative regulation of ion transport,0.00073783,17,17,257,3.132043704,Up,Other
+GO:0007169~transmembrane receptor protein tyrosine kinase signaling pathway,0.000184158,46,17,258,3.734808859,Up,Other
+GO:0048011~neurotrophin TRK receptor signaling pathway,0.000825927,7,17,259,3.083058214,Up,Other
+GO:0048857~neural nucleus development,0.000836393,11,17,260,3.077589634,Up,Other
+GO:0035304~regulation of protein dephosphorylation,0.000704782,13,17,261,3.151945341,Up,Other
+GO:0035418~protein localization to synapse,6.43E-06,10,17,262,5.191864251,Up,Other
+GO:0050885~neuromuscular process controlling balance,9.50E-05,13,17,263,4.022455797,Up,Other
+GO:0019233~sensory perception of pain,0.00027643,16,17,264,3.558414935,Up,Other
+GO:0001508~action potential,0.00073783,17,17,265,3.132043704,Up,Other
+GO:0030902~hindbrain development,0.000200708,22,17,266,3.697435151,Up,Other
+GO:0035640~exploration behavior,0.000635167,8,17,267,3.19711204,Up,Other
+GO:0071705~nitrogen compound transport,0.000187805,59,17,268,3.726292796,Up,Other
+GO:0010038~response to metal ion,0.000427711,33,17,269,3.368849696,Up,Other
+GO:0046777~protein autophosphorylation,5.98E-05,28,17,270,4.223362212,Up,Other
+GO:0009261~ribonucleotide catabolic process,0.000304716,9,17,271,3.516104641,Up,Other
+GO:0014047~glutamate secretion,0.000784716,8,17,272,3.105287369,Up,Other
+GO:0008277~regulation of G-protein coupled receptor protein signaling pathway,1.53E-06,20,17,273,5.815484326,Up,Other
+GO:0007528~neuromuscular junction development,0.000986834,10,17,274,3.005755984,Up,Other
+GO:0008360~regulation of cell shape,3.89E-05,21,17,275,4.409705754,Up,Other
+GO:0021700~developmental maturation,1.71E-05,33,17,276,4.766759206,Up,Other
+GO:0030278~regulation of ossification,0.000735477,24,17,277,3.133430834,Up,Other
+GO:0045665~negative regulation of neuron differentiation,0.000712927,25,22,278,3.146955192,Up,Regulation of Development
+GO:0051961~negative regulation of nervous system development,2.93E-06,38,22,279,5.533824284,Up,Regulation of Development
+GO:0050768~negative regulation of neurogenesis,5.86E-05,33,22,280,4.231872052,Up,Regulation of Development
+GO:0010721~negative regulation of cell development,0.000209978,36,22,281,3.67782571,Up,Regulation of Development
+GO:0051270~regulation of cellular component movement,0.000624037,66,19,282,3.204789865,Up,Regulation of Development
+GO:0033002~muscle cell proliferation,0.000327384,23,19,283,3.484942981,Up,Muscle Cell Proliferation
+GO:0048659~smooth muscle cell proliferation,0.000229544,19,19,284,3.639133687,Up,Muscle Cell Proliferation
+GO:0048660~regulation of smooth muscle cell proliferation,0.000357943,19,19,285,3.44618569,Up,Muscle Cell Proliferation
+GO:0007411~axon guidance,1.10E-05,28,19,286,4.958341392,Up,Cell Differentiation and Morphogenesis
+GO:0097485~neuron projection guidance,1.20E-05,28,19,287,4.920589591,Up,Cell Differentiation and Morphogenesis
+GO:0022028~tangential migration from the subventricular zone to the olfactory bulb,0.000688472,5,19,288,3.162113956,Up,Other
+GO:0040011~locomotion,3.53E-07,123,19,289,6.45167006,Up,Other
+GO:0006928~movement of cell or subcellular component,1.77E-06,132,19,290,5.752665356,Up,Other

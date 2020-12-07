@@ -14,7 +14,7 @@ Here we perform some exploratory data analysis in order to confirm the quality o
 
 ### Load packages
 
-```{r, message = FALSE, eval = FALSE}
+```{r, message = FALSE}
 library(DESeq2)
 library(magrittr)
 library(ggplot2)
@@ -27,7 +27,7 @@ library(RColorBrewer)
 
 The count data from the different sequencing runs are loaded and combined together into one unit. Next, a metatable is created for easier downstream processing. Then, technical replicates are collapsed by DESeq2 to create the final dataset used for the QC analysis. We apply the regularized log transformation to the data so that it is more Gaussian, a requirement for the QC methods.
 
-```{r, eval = FALSE}
+```{r}
 ### Load count data
 countData1 <- read.csv("countData_july.csv", header = TRUE)
 rownames(countData1) <- countData1[ ,1]
@@ -70,7 +70,7 @@ rdCounts <- assay(rd) %>% as.data.frame()
 
 A simple way to visualize the precision of our independent biological replicates is simply by graphing their counts against each other. We expect a high correlation between all different groups. The data shows a high amount of correlation between log-transformed counts among the different groups.
 
-```{r, eval = FALSE}
+```{r}
 ### Saline WT scatterplots
 p2 <- ggplot(rdCounts, aes(SAL_WT1, SAL_WT2)) +
   geom_point(size = 0.5, alpha = 0.3) +
@@ -154,7 +154,7 @@ grid.arrange(p2, p3, p4, p5,
 
 Principal component analysis is another means of visualizing the similarity in count measurements between the different groups. The adjusted axes allow us to see whether or not the different groups cluster together. The data shows that each replicate for WT and KO cluster together due to similarity in variance. The only notable exception is the saline KO replicate 2 which is slightly off compared to the others. Similarly, the Ro KO replicate 2 is also quite far off from the others. This is not completely unexpected however, since we did note a poor alignment rate and unusual QC from the FastQC files.
 
-```{r, eval = FALSE}
+```{r}
 # Arrange variables for plotting with ggplot2
 rdNoTotal <- rd[ ,rd$technical %in% colData(rd)[3:18, 1]]
 pcaDatNoTotal <- plotPCA(rdNoTotal, intgroup = "technical", returnData = TRUE)
@@ -176,7 +176,7 @@ ggplot(pcaDatNoTotal, aes(PC1, PC2, color = technical, label = name)) +
 
 Finally, we used a clustered heatmap to visualize the similarity between the different samples. Overall,  many groups clustered together though some replicates, particularly the Saline KO replicate 2, clustered better with other libraries than it did its own replicates. It is contained in a branch on its own which is a parent branch to two other libraries Ro+Rapa KO replicate 2 and Saline KO replicate 3 which are also off on their own. In general, since the KO libraries are constructed from null-antibody tissue we expect their to be some level of background binding that will be inconsistant among the different samples. Since the wild-type material clusters together properly, we have kept all libraries in going forward.
 
-```{r, eval = FALSE}
+```{r}
 sampleDists <- dist(t(assay(rdNoTotal)))
 
 sampleDistMatrix <- as.matrix(sampleDists)

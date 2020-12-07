@@ -1,0 +1,541 @@
+---
+title: "Figure S3 (Draft 1)"
+author: "Sanjeev Namjoshi"
+date: "November 13th, 2018"
+output:
+  pdf_document: 
+    toc: false
+    toc_depth: 5
+  html_notebook: default
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
+```
+
+```{r packages}
+library(xlsx)
+library(mgu74a.db)
+library(org.Hs.eg.db)
+library(magrittr)
+library(cowplot)
+library(Ckmeans.1d.dp)
+library(seqinr)
+library(lsr)
+library(ggplot2)
+library(reshape2)
+library(biomaRt)
+library(Biostrings)
+```
+
+```{r functions}
+cutoff <- function(range) {
+  
+  above <- table(fullDist[range,"B_D_A_RipDist"]) +
+    table(fullDist[range,"B_D_A_ParDist"]) +
+    table(fullDist[range,"B_DDist"]) +
+    table(fullDist[range,"D_A_ParDist"])
+  
+  
+  below <- table(fullDist[length(range):nrow(ncAvg),"B_D_A_RipDist"]) +
+    table(fullDist[length(range):nrow(ncAvg),"B_D_A_ParDist"]) +
+    table(fullDist[length(range):nrow(ncAvg),"B_DDist"]) +
+    table(fullDist[length(range):nrow(ncAvg),"D_A_ParDist"])
+  
+  return((above / (above + below))) 
+}
+
+getMaxLengthSequences <- function(x) {
+  salSeqMax <- split(x, factor(x$mgi_symbol))
+  salSeqMax <- lapply(salSeqMax, function(x) max(x$length)) %>% unlist() %>% as.data.frame()
+  salSeqMax$mgi_symbol <- row.names(salSeqMax)
+  row.names(salSeqMax) <- NULL
+  names(salSeqMax) <- c("length", "mgi_symbol")
+  salSeqUnique <- merge(salSeqMax, x)
+  salSeqUnique <- salSeqUnique[order(salSeqUnique$mgi_symbol), ]
+  
+  return(salSeqUnique)
+}
+
+getmotifs <- function(x) {
+  require(seqinr)
+  
+  seq <- x %>% tolower() %>% s2c()
+  
+  qfm <- matchPDict(PDict(c("AGGA", "TGGA")), DNAString(x)) %>% unlist() %>% data.frame()
+  qfm <- qfm[order(qfm$start), 1:2] %>% as.matrix() %>% t() %>% c() %>% diff() %>% unique()
+  qfm <- sum(qfm[-1] < 6)
+  
+  output <- c("ACUK" = count(seq, 4)[c("actg", "actt")] %>% sum(),
+              "WGGA" = count(seq, 4)[c("agga", "tgga")] %>% sum(),
+              "GAC" = count(seq, 3)["gac"] %>% sum(),
+              "GACR" = count(seq, 4)[c("gaca", "gacg")] %>% sum(),
+              "GACARG" = count(seq,6)[c("gacaag", "gacagg")] %>% sum(),
+              "QFM" = qfm)
+  
+  return(output)
+}
+
+multipleRho <- function(sequ, motif1, motif2) {
+  require(seqinr)
+  
+  freq1 <- count(sequ, nchar(motif1), freq = TRUE)[motif1]
+  freq2 <- count(sequ, nchar(motif2), freq = TRUE)[motif2]
+  expected1 <- sapply(s2c(motif1), function(x) count(sequ, 1, freq = TRUE)[unique(x)]) %>% unique() %>% prod()
+  expected2 <- sapply(s2c(motif2), function(x) count(sequ, 1, freq = TRUE)[unique(x)]) %>% unique() %>% prod()
+  
+  output <- (freq1 + freq2) / (expected1 + expected2)
+  names(output) <- NULL
+  return(output)
+}
+
+getRho <- function(x) {
+  require(seqinr)
+  
+  seq <- x %>% tolower() %>% s2c()
+  
+  output <- c(ACUK = multipleRho(seq, "actg", "actt"),
+              WGGA = multipleRho(seq, "agga", "tgga"),
+              GAC = rho(seq, 3)["gac"],
+              GACR = multipleRho(seq, "gaca", "gacg"),
+              GACARG = multipleRho(seq, "gacaag", "gacagg"))
+  
+  names(output) <- c("ACUK", "WGGA", "GAC", "GACR", "GACARG")
+  return(output)
+}
+```
+
+```{r load_final_count_data}
+nc <- read.csv("finalCountData.csv", header = TRUE)
+rownames(nc) <- nc[ ,1]
+nc <- nc[ ,-1]
+
+ncAvg <- data.frame(SAL_WT = rowMeans(nc[ ,1:3]),
+                    SAL_KO = rowMeans(nc[ ,4:6]),
+                    RO_WT = rowMeans(nc[ ,7:9]),
+                    RO_KO = nc[ ,10],
+                    RO_RAP_WT = rowMeans(nc[ ,11:13]),
+                    RO_RAP_KO = rowMeans(nc[ ,14:16]))
+
+ncAvg <- ncAvg[order(ncAvg$SAL_WT, decreasing = TRUE), ]
+```
+
+```{r load_fmrp_datasets}
+### Brown data
+brownDat <- read.xlsx("brown_list.xls", sheetIndex = 1, header = TRUE, startRow = 2)
+brownProbes <- brownDat[ ,"Probe.Set"] %>% as.vector()
+probes <- as.list(mgu74aALIAS2PROBE)
+brownGenes <- probes[probes %in% brownProbes] %>% unlist() %>% names()
+
+### Darnell data
+darnellDat <- read.xlsx("darnell_list.xls", sheetIndex = 1, header = TRUE, startRow = 2)
+darnellGenes <- darnellDat[ ,"Symbol.from.mm9"] %>% as.vector()
+
+### Ascano PAR-CLIP data
+ascanoParDat <- read.xlsx("ascano_par.xlsx", sheetIndex = 1, header = TRUE, startRow = 3, colIndex = 1:4)
+ascanoParGenes <- ascanoParDat[ascanoParDat$Total.mRNA.binding.sites > 0, "Gene"] %>% as.vector()
+
+### Ascano RIP-CHIP data
+ascanoRipDat <- read.csv("ascano_rip.csv", header = TRUE, na.strings = "")
+ascanoRipDat <- ascanoRipDat[ ,c(1,3)]
+ascanoRipDat <- split(ascanoRipDat, ascanoRipDat$Target.bin)
+ascanoRipDat <- ascanoRipDat$Target
+ascanoRipGenes <- ascanoRipDat[ ,1] %>% as.vector()
+
+### Miyashiro data
+miyashiroDat <- read.csv("miyashiro.csv", header = TRUE)
+miyashiroDat <- miyashiroDat[-c(1,1153:1159), ]
+miyashiroDat <- miyashiroDat[ ,"UniGene"] %>% as.data.frame()
+names(miyashiroDat) <- "unigene"
+miyashiroDat$unigene <- as.character(miyashiroDat$unigene)
+miyashiroDat$symbol <- mapIds(org.Hs.eg.db,
+                            keys = miyashiroDat$unigene,
+                            column = "SYMBOL",
+                            keytype = "UNIGENE",
+                            multiVals = "first")
+miyashiroGenes <- miyashiroDat$symbol %>% na.omit() %>% as.vector()
+
+### Consensus data
+BDARIP <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 2, header = FALSE, startRow = 2, stringsAsFactors = FALSE)$X1
+BDAPAR <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 3, header = FALSE, startRow = 2, stringsAsFactors = FALSE)$X1
+BD <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 4, header = FALSE, startRow = 2, stringsAsFactors = FALSE)$X1
+DAPAR <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 5, header = FALSE, startRow = 2, stringsAsFactors = FALSE)$X1
+
+brownGenes <- read.csv("brownGenes.csv", stringsAsFactors = FALSE)$x
+darnellGenes <- read.csv("darnellGenes.csv", stringsAsFactors = FALSE)$x
+ascanoParGenes <- read.csv("ascanoParGenes.csv", stringsAsFactors = FALSE)$x
+ascanoRipGenes <- read.csv("ascanoRipGenes.csv", stringsAsFactors = FALSE)$x
+miyashiroGenes <- read.csv("miyashiroGenes.csv", stringsAsFactors = FALSE)$x
+```
+
+# Figure S3A
+
+```{r prepare_target_distribution}
+### Distributions across ranked saline genes for full data sets
+fullDist <- data.frame(row.names = row.names(ncAvg) %>% toupper(),
+                       order = 1:nrow(ncAvg),
+                       brownDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (brownGenes %>% toupper()), "Brown", NA),
+                       darnellDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (darnellGenes %>% toupper()), "Darnell", NA),
+                       ascanoParDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (ascanoParGenes %>% toupper()), "Ascano PAR-CLIP", NA),
+                       ascanoRipDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (ascanoRipGenes %>% toupper()), "Ascano RIP-CHIP", NA),
+                       miyashiroRipDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (miyashiroGenes %>% toupper()), "Miyashiro", NA),
+                       B_D_A_RipDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (BDARIP %>% toupper()), "B_D_A-RIP", NA),
+                       B_D_A_ParDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (BDAPAR %>% toupper()), "B_D_A-PAR", NA),
+                       B_DDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (BD %>% toupper()), "B_D", NA),
+                       D_A_ParDist = ifelse((row.names(ncAvg) %>% toupper()) %in% (DAPAR %>% toupper()), "D_A-PAR", NA))
+
+fullDist.m <- melt(fullDist, id.vars = "order")
+
+fullDist.m$value <- factor(fullDist.m$value, levels = rev(c("Darnell", "Brown", "B_D_A-RIP", "B_D_A-PAR", "B_D", "D_A-PAR", "Ascano PAR-CLIP", "Ascano RIP-CHIP", "Miyashiro")))
+fullDist.m$variable <- factor(fullDist.m$variable, levels = rev(c("darnellDist", "brownDist", "B_D_A_RipDist", "B_D_A_ParDist", "B_DDist", "D_A_ParDist", "ascanoParDist", "ascanoRipDist", "miyashiroRipDist")))
+
+fullDist.m <- fullDist.m[complete.cases(fullDist.m), ]
+```
+
+```{r determine_cutoff}
+### Above/below cutoff line
+coverage = NULL
+for(i in 1:nrow(ncAvg)) {
+  coverage[i] <- cutoff(1:i)
+}
+
+orderedCoverage <- data.frame(order = 1:nrow(ncAvg),
+                              coverage = coverage * 100)
+```
+
+```{r, echo = FALSE}
+orderedCoverage <- read.csv("orderedCoverage.csv", stringsAsFactors = FALSE)
+```
+
+```{r filter_plot_distribution}
+consensusCutoff <- orderedCoverage[orderedCoverage$coverage < 95, ] %>% nrow()
+
+### Consensus percentage graph
+a <- ggplot(orderedCoverage, aes(x = order, y = coverage)) +
+  geom_line() +
+  geom_vline(xintercept = consensusCutoff, color = "red", linetype = "dashed") +
+  xlab("Ranked Saline Genes") +
+  ylab("Percent Consensus \n Lists in Cutoff") +
+  theme_bw() + 
+  theme(axis.title.y = element_text(size = 10),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+### Consensus overlap graph
+b <- ggplot(fullDist.m, aes(x = order, y = value)) +
+  geom_point(alpha = 0.75, color = "springgreen4", size = 0.1) +
+  geom_vline(xintercept = consensusCutoff, color = "red", linetype = "dashed") +
+  xlab("") +
+  ylab("") +
+  theme_bw() +
+  theme(axis.text.y = element_text(size = 7),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.margin = margin(r = 20))
+
+### 281 x 317
+plot_grid(b, a, ncol = 1, align = "hv")
+```
+
+# Figure S3B
+
+```{r enrichment_ratios}
+### Create enrichment ratios of WT over KO for each treatment
+ncAvgDif <- data.frame(row.names = row.names(ncAvg),
+                       SAL = ncAvg$SAL_WT / ncAvg$SAL_KO,
+                       RO = ncAvg$RO_WT / ncAvg$RO_KO,
+                       RO_RAP = ncAvg$RO_RAP_WT / ncAvg$RO_RAP_KO)
+
+### Load targets and non-targets
+targets <- c("Gabbr1", "Gabbr2", "Nisch", "Prrc2a", "Kif1a", "Grin2a", "Adgrb2", "Cyfip2", "Map1b", "Bsn", "Adcy1", "Pde2a", "Lingo1", "Grin2b")
+nontargets <- c("Pabpc1", "Tmem65", "Hprt1", "St8sia3", "Sae1", "Glrb", "Gria2", "Tcerg1", "Eif3a", "Slc35f1", "Atp6ap2", "Vldlr")
+
+### Create a data frame that includes the overlap of genes with our data set for each consensus gene list as well as the full Brown and Darnell lists
+foldRange <- rbind(data.frame(group = "Brown", value = ncAvgDif[row.names(ncAvgDif) %in% brownGenes, ]$SAL),
+                   data.frame(group = "Darnell", value = ncAvgDif[row.names(ncAvgDif) %in% darnellGenes, ]$SAL),
+                   data.frame(group = "B_D_A-RIP", value = ncAvgDif[(row.names(ncAvgDif) %>% toupper()) %in% BDARIP, ]$SAL),
+                   data.frame(group = "B_D_A-PAR", value = ncAvgDif[(row.names(ncAvgDif) %>% toupper()) %in% BDAPAR, ]$SAL),
+                   data.frame(group = "B_D", value = ncAvgDif[(row.names(ncAvgDif) %>% toupper()) %in% BD, ]$SAL),
+                   data.frame(group = "D_A-PAR", value = ncAvgDif[(row.names(ncAvgDif) %>% toupper()) %in% DAPAR, ]$SAL),
+                   data.frame(group = "Non-Targets", value = ncAvgDif[row.names(ncAvgDif) %in% nontargets, ]$SAL))
+
+### Determine average enrichment ratio range between WT and KO for all groups
+foldRange.s <- split(foldRange, foldRange$group)
+
+### Take the mean of the lower quartile of the ranges for all groups (indicated by the dotted line)
+cutoff <- sapply(foldRange.s, function(x) quantile(x$value, prob = 0.25))[1:6] %>% mean()
+```
+
+```{r prepare_and_plot_enrichment_ratios}
+### T-tests to show each cutoff is different from non-targets
+data.frame(row.names = c("Brown", "Darnell", "B_D_A-RIP", "B_D_A-PAR", "B_D", "D_A-PAR"),
+           p.value = c(t.test(foldRange[foldRange$group == "Brown", "value"], foldRange[foldRange$group == "Non-Targets", "value"])$p.value,
+                       t.test(foldRange[foldRange$group == "Darnell", "value"], foldRange[foldRange$group == "Non-Targets", "value"])$p.value,
+                       t.test(foldRange[foldRange$group == "B_D_A-RIP", "value"], foldRange[foldRange$group == "Non-Targets", "value"])$p.value,
+                       t.test(foldRange[foldRange$group == "B_D_A-PAR", "value"], foldRange[foldRange$group == "Non-Targets", "value"])$p.value,
+                       t.test(foldRange[foldRange$group == "B_D", "value"], foldRange[foldRange$group == "Non-Targets", "value"])$p.value,
+                       t.test(foldRange[foldRange$group == "D_A-PAR", "value"], foldRange[foldRange$group == "Non-Targets", "value"])$p.value))
+
+### Data for signficance bars locations
+sig1 <- data.frame(a = c(1, 1:7, 7), b = c(3.4, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.4))
+sig2 <- data.frame(a = c(2, 2:7, 7), b = c(3.2, 3.3, 3.3, 3.3, 3.3, 3.3, 3.3, 3.2))
+sig3 <- data.frame(a = c(3, 3:7, 7), b = c(3.0, 3.1, 3.1, 3.1, 3.1, 3.1, 3.0))
+sig4 <- data.frame(a = c(4, 4:7, 7), b = c(2.8, 2.9, 2.9, 2.9, 2.9, 2.8))
+sig5 <- data.frame(a = c(5, 5:7, 7), b = c(2.6, 2.7, 2.7, 2.7, 2.6))
+sig6 <- data.frame(a = c(6, 6:7, 7), b = c(2.4, 2.5, 2.5, 2.4))
+
+### Graph data
+c <- ggplot(foldRange, aes(x = group, y = value, fill = group)) +
+  geom_boxplot() +
+  geom_hline(yintercept = cutoff, color = "red", linetype = "dashed") +
+  xlab("") +
+  #ylab("WT-to-KO Fold Ratio") +
+  ylab("") +
+  scale_y_continuous(breaks = c(seq(0,5, by = 0.5))) +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 35, hjust = 1, vjust = 1, size = 12),
+        axis.text.y = element_text(size = 12)) 
+
+### Draw signifiance bar lines (300 x 300)
+c + geom_line(data = sig1, aes(x = a, y = b, fill = NULL)) + annotate("text", x = 4.0, y = 3.55, label = "***", size = 4) +
+  geom_line(data = sig2, aes(x = a, y = b, fill = NULL)) + annotate("text", x = 4.5, y = 3.35, label = "***", size = 4) +
+  geom_line(data = sig3, aes(x = a, y = b, fill = NULL)) + annotate("text", x = 5.0, y = 3.15, label = "***", size = 4) +
+  geom_line(data = sig4, aes(x = a, y = b, fill = NULL)) + annotate("text", x = 5.5, y = 2.95, label = "***", size = 4) +
+  geom_line(data = sig5, aes(x = a, y = b, fill = NULL)) + annotate("text", x = 6.0, y = 2.75, label = "***", size = 4) +
+  geom_line(data = sig6, aes(x = a, y = b, fill = NULL)) + annotate("text", x = 6.5, y = 2.55, label = "***", size = 4)
+```
+
+# Figure S3C
+
+```{r cutoff_2}
+ncAvgCut <- ncAvg[1:consensusCutoff, ]
+ncAvgCut$"Saline" <- ncAvg[1:consensusCutoff, "SAL_WT"] / ncAvg[1:consensusCutoff, "SAL_KO"]
+ncAvgCut$"Ro" <- ncAvg[1:consensusCutoff, "RO_WT"] / ncAvg[1:consensusCutoff, "RO_KO"]
+ncAvgCut$"Ro+Rapa" <- ncAvg[1:consensusCutoff, "RO_RAP_WT"] / ncAvg[1:consensusCutoff, "RO_RAP_KO"]
+
+### Univariate k-means clustering. Arrange output in data frame
+clustDat <- data.frame(row.names = row.names(ncAvgCut),
+                       enriched = ncAvgCut$Saline,
+                       cluster = Ckmeans.1d.dp(ncAvgCut$Saline, 2)$cluster)
+
+### Define a second cutoff by taking the max in the "background" cluster
+cutoff2 <- split(clustDat, clustDat$cluster)[[1]]$enriched %>% max()
+cutoff2
+```
+
+```{r filter_by_cutoff}
+### Define knockout cutoff
+KOcutoff <- mean(cutoff, cutoff2)
+KOcutoff
+
+### Filter data to obtain this cutoff
+filteredTargets <- ncAvgCut[ncAvgCut$Saline > KOcutoff, 1:6]
+```
+
+```{r plot_cutoff_v_background}
+### Create a filter variable that specifies signal or background
+ncAvgCut$filter <- ifelse(ncAvgCut$Saline > KOcutoff, "Signal", "Background")
+
+ncAvgCut$filter <- factor(ncAvgCut$filter, levels = c("Signal", "Background"))
+
+### Graph with ggplot2 and arrange together (400 x 400)
+  ggplot(ncAvgCut, aes(x = SAL_KO %>% log2(), y = SAL_WT %>% log2(), color = filter)) +
+    geom_point() +
+    scale_color_manual(name = "", values = c("blue2", "grey60")) +
+    xlab("log2(Knockout)") +
+    ylab("log2(Control)") +
+    theme_bw() +
+    theme(legend.position = "bottom",
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(size = 15),
+          axis.text.y = element_text(size = 15),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16), 
+          legend.text = element_text(size = 15))
+```
+
+# Figure S3D
+
+```{r separate_KO_background}
+ncLog <- ncAvgCut[ ,7:9]
+ncLog <- apply(ncLog, 2, log2) %>% as.data.frame()
+names(ncLog) <- c("Saline", "Ro", "RoRapa")
+ncLog$filter <- ncAvgCut$filter
+
+g1 <- ncLog[ncLog$filter == "Signal", ]
+g2 <- ncLog[ncLog$filter == "Background", ]
+
+### 300 x 300
+ggplot(ncLog, aes(x = Saline)) +
+  geom_histogram(data = ncLog[which(ncLog$filter %in% "Signal"), ], aes(y = ..density..), fill = "grey60", bins = 100) +
+  geom_histogram(data = ncLog[which(ncLog$filter %in% "Background"), ], aes(y = ..density..), fill = "grey60", bins = 100) +
+  geom_density(data = ncLog[which(ncLog$filter %in% "Signal"), ], aes(y = ..density..), fill = "chartreuse3", alpha = 0.5) +
+  geom_density(data = ncLog[which(ncLog$filter %in% "Background"), ], aes(y = ..density..), fill = "firebrick2", alpha = 0.5) +
+  xlab("") + 
+  ylab("Density") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.y = element_text(size = 16))
+```
+
+```{r, eval = FALSE}
+mito <- read.csv("mito.csv", header = FALSE, stringsAsFactors = FALSE)$V1
+glia <- read.csv("glial.csv", header = FALSE, stringsAsFactors = FALSE)$V1
+
+filteredTargets <- filteredTargets[!(row.names(filteredTargets) %in% c(mito, glia)), ]
+
+finalCountData <- nc[row.names(nc) %in% row.names(filteredTargets), ]
+
+write.csv(finalCountData, "KO_filtered_counts_data.csv")
+```
+
+# Figure S3E
+
+```{r coding_seq_from_biomart}
+### Load gene list
+genes <- read.csv("finalData.csv", header = TRUE, stringsAsFactors = FALSE)$Row.names
+
+filteredCounts <- read.csv("finalCountData.csv", header = TRUE, stringsAsFactors = FALSE, row.names = 1) %>% row.names()
+
+### Get all sequences for the filtered list
+ensembl <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+
+sequ <- biomaRt::getSequence(id = filteredCounts,
+                                type = "mgi_symbol",
+                                seqType = "coding",
+                                mart = ensembl)
+```
+
+```{r filter_target_nontarget}
+sequ <- read.csv("all_sequences.csv", header = TRUE, stringsAsFactors = FALSE)
+genes <- read.csv("finalData.csv", header = TRUE, stringsAsFactors = FALSE)$Row.names
+```
+
+```{r filter_sequences_further}
+### Remove unavailable sequences
+sequ <- sequ[!grepl("Sequence unavailable", sequ$'coding', fixed = TRUE), ]
+
+### Find the length of each sequence then pick the max length sequence if there are multiple sequences returned from BioMart
+sequ <- sequ[order(sequ$mgi_symbol), ]
+sequ$length <- sapply(sequ$coding, nchar)
+sequ <- getMaxLengthSequences(sequ)
+
+### Filter into either "targets" or "non-targets"
+targets <- sequ[sequ$mgi_symbol %in% genes, ]
+nonTargets <- sequ[!(sequ$mgi_symbol %in% genes), ]
+```
+
+```{r analyze_coding_motifs, eval = FALSE}
+### Targets
+targetMotifs <- matrix(sapply(targets[ ,"coding"], getmotifs), nrow = nrow(targets), ncol = 6, byrow = TRUE)
+targetMotifTable <- data.frame(Length = targets$length)
+rownames(targetMotifTable) <- make.names(targets$mgi_symbol, unique = TRUE)
+targetMotifTable <- cbind(targetMotifTable, targetMotifs) %>% as.data.frame()
+names(targetMotifTable) <- c("Length", "ACUK", "WGGA", "GAC", "GACR", "GACARG", "QFM")
+
+targetMotifTable$ACUK.freq <- round((targetMotifTable$ACUK * 1000) / targetMotifTable$Length, 2)
+targetMotifTable$WGGA.freq <- round((targetMotifTable$WGGA * 1000) / targetMotifTable$Length, 2)
+targetMotifTable$GAC.freq <- round((targetMotifTable$GAC * 1000) / targetMotifTable$Length, 2)
+targetMotifTable$GACR.freq <- round((targetMotifTable$GACR * 1000) / targetMotifTable$Length, 2)
+targetMotifTable$GACARG.freq <- round((targetMotifTable$GACARG * 1000) / targetMotifTable$Length, 2)
+targetMotifTable$QFM.freq <- round((targetMotifTable$QFM * 1000) / targetMotifTable$Length, 2)
+
+rhoMotifs <- matrix(sapply(targets[, "coding"], getRho), nrow = nrow(targets), ncol = 5, byrow = TRUE)
+
+### Non-targets
+nonTargetMotifs <- matrix(sapply(nonTargets[ ,"coding"], getmotifs), nrow = nrow(nonTargets), ncol = 6, byrow = TRUE)
+nonTargetMotifTable <- data.frame(Length = nonTargets$length)
+row.names(nonTargetMotifTable) <- make.names(nonTargets$mgi_symbol, unique = TRUE)
+nonTargetMotifTable <- cbind(nonTargetMotifTable, nonTargetMotifs) %>% as.data.frame()
+names(nonTargetMotifTable) <- c("Length", "ACUK", "WGGA", "GAC", "GACR", "GACARG", "QFM")
+
+nonTargetMotifTable$ACUK.freq <- round((nonTargetMotifTable$ACUK * 1000) / nonTargetMotifTable$Length, 2)
+nonTargetMotifTable$WGGA.freq <- round((nonTargetMotifTable$WGGA * 1000) / nonTargetMotifTable$Length, 2)
+nonTargetMotifTable$GAC.freq <- round((nonTargetMotifTable$GAC * 1000) / nonTargetMotifTable$Length, 2)
+nonTargetMotifTable$GACR.freq <- round((nonTargetMotifTable$GACR * 1000) / nonTargetMotifTable$Length, 2)
+nonTargetMotifTable$GACARG.freq <- round((nonTargetMotifTable$GACARG * 1000) / nonTargetMotifTable$Length, 2)
+nonTargetMotifTable$QFM.freq <- round((nonTargetMotifTable$QFM * 1000) / nonTargetMotifTable$Length, 2)
+
+rhoMotifsNonTarget <- matrix(sapply(nonTargets[, "coding"], getRho), nrow = nrow(nonTargets), ncol = 5, byrow = TRUE)
+```
+
+```{r load_motif_tables}
+targetMotifTable <- read.csv("targetMotifTable.csv", header = TRUE, stringsAsFactors = FALSE, row.names = 1)
+
+nonTargetMotifTable <- read.csv("nonTargetMotifTable.csv", header = TRUE, stringsAsFactors = FALSE, row.names = 1)
+
+rhoMotifs <- read.csv("rhoMotifs.csv", header = TRUE, stringsAsFactors = FALSE, row.names = 1)
+
+rhoMotifsNonTarget <- read.csv("rhoMotifsNonTarget.csv", header = TRUE, stringsAsFactors = FALSE, row.names = 1)
+```
+
+```{r motif_statistics}
+### T-tests
+tt <- c(t.test(targetMotifTable$ACUK.freq, nonTargetMotifTable$ACUK.freq)$p.value,
+        t.test(targetMotifTable$WGGA.freq, nonTargetMotifTable$WGGA.freq)$p.value,
+        t.test(targetMotifTable$GAC.freq, nonTargetMotifTable$GAC.freq)$p.value,
+        t.test(targetMotifTable$GACR.freq, nonTargetMotifTable$GACR.freq)$p.value,
+        t.test(targetMotifTable$GACARG.freq, nonTargetMotifTable$GACARG.freq)$p.value,
+        t.test(targetMotifTable$QFM, nonTargetMotifTable$QFM)$p.value)
+
+### Wilcox-Mann_Whitley tests
+wmw <- c(wilcox.test(targetMotifTable$ACUK.freq, nonTargetMotifTable$ACUK.freq, correct = FALSE)$p.value,
+         wilcox.test(targetMotifTable$WGGA.freq, nonTargetMotifTable$WGGA.freq, correct = FALSE)$p.value,
+         wilcox.test(targetMotifTable$GAC.freq, nonTargetMotifTable$GAC.freq, correct = FALSE)$p.value,
+         wilcox.test(targetMotifTable$GACR.freq, nonTargetMotifTable$GACR.freq, correct = FALSE)$p.value,
+         wilcox.test(targetMotifTable$GACARG.freq, nonTargetMotifTable$GACARG.freq, correct = FALSE)$p.value,
+         wilcox.test(targetMotifTable$QFM, nonTargetMotifTable$QFM, correct = FALSE)$p.value)
+
+### Effect size
+cd <- c(cohensD(targetMotifTable$ACUK.freq, nonTargetMotifTable$ACUK.freq),
+        cohensD(targetMotifTable$WGGA.freq, nonTargetMotifTable$WGGA.freq),
+        cohensD(targetMotifTable$GAC.freq, nonTargetMotifTable$GAC.freq),
+        cohensD(targetMotifTable$GACR.freq, nonTargetMotifTable$GACR.freq),
+        cohensD(targetMotifTable$GACARG.freq, nonTargetMotifTable$GACARG.freq),
+        cohensD(targetMotifTable$QFM, nonTargetMotifTable$QFM))
+```
+
+```{r final motif table}
+motifSummary <- data.frame("Mean Frequency per kB (Cutoff)" = colMeans(targetMotifTable)[8:13],
+                           "Mean Frequency per kB (Non-Cutoff)" = colMeans(nonTargetMotifTable)[8:13],
+                           "Rho (Cutoff)" = c(colMeans(rhoMotifs), NA),
+                           "Rho (Non-Cutoff)" = c(colMeans(rhoMotifsNonTarget), NA),
+                           "t-test" = round(tt, 3),
+                           "Wilcoxon-Mann-Whitney Test" = round(wmw, 3),
+                           "Cohen's d" = round(cd, 3))
+
+motifSummary
+```
+
+```{r visualize_motifs}
+motifFreq.m <- rbind(melt(targetMotifTable[ ,8:12]),
+                 melt(nonTargetMotifTable[ ,8:12])) %>% as.data.frame()
+motifFreq.m$type <- c(rep("Target", nrow(melt(targetMotifTable[ ,8:12]))),
+                  rep("Non-Target", nrow(melt(nonTargetMotifTable[ ,8:12]))))
+levels(motifFreq.m$variable) <- c("ACUK", "WGGA", "GAC", "GACR", "GACARG")
+motifFreq.m$type <- factor(motifFreq.m$type, levels = c("Target", "Non-Target"))
+
+### 573 x 354
+  ggplot(motifFreq.m, aes(x = type, y = value, fill = type)) +
+  geom_boxplot() +
+  facet_grid(. ~ variable) +
+  xlab("") +
+  ylab("Freq/kB") +
+  labs(fill = "") +
+  scale_fill_manual(values = c("dodgerblue4", "darkgoldenrod2")) +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 35, hjust = 1, vjust = 1, size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.y = element_text(size = 16),
+        strip.text.x = element_text(size = 16))
+```

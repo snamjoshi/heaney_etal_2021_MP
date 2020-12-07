@@ -1,0 +1,323 @@
+---
+title: "Figure 3 panels generated from RNAseq data (Heaney et al. 2021)"
+author: "Sanjeev V Namjoshi (snamjoshi87@utexas.edu)"
+date: "February 23rd, 2017 (revised June 15th, 2019)"
+output:
+  pdf_document: 
+    highlight: haddock
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
+```
+
+## Overview
+
+DAVID biological process data is often very complex and obtaining the optimal level of granularity within the ontology to view common biological processes is difficult. To produce summary figures of biological processes we needed to develop an approach to give a general picture of the types of processes involved across all levels of granularity based on the number of genes that fell into that category. This produced "uniquely enriched GO biological process clusters" for the FMRP targets we identified by RIPseq for the two treatments (upregulated transcripts only). 
+
+The strategy here is to cluster on the basis of similarity of overlap within the branch following [1]. This will group like GO-terms together in a branch on the dendrogram. This unbiased approach allows us to give our own names manually to each major cluster family. Then, we can take the average p-value within each branch, the average number of genes per GO term, and plot this with `ggplot2` to produce the figures.
+
+To determine cluster number, the within-sum-of-squares (WSS) is graphed for *n* clusters. The chosen cluster number attempts to minimze the WSS visually seeing where the overall shape of the plot begins to flatten out on the y-axis.
+
+Generation of the DAVID data (including filtering RNAs for upregulated transcripts only) is available in `DAVID_go.Rmd`. However in the event that DAVID servers are not available or something about their data processing has changed, the following files generated below are already available in this directory:
+
+* `david_ro_down_1000_biological_process.txt`
+* `david_ro_up_1000_biological_process.txt`
+* `david_roRap_down_1000_biological_process.txt`
+* `david_roRap_up_1000_biological_process.txt`
+
+## R packages and functions
+
+```{r packages}
+library(factoextra)
+library(ggplot2)
+library(magrittr)
+library(gdata)
+library(dplyr)
+library(cowplot)
+library(ggthemes)
+```
+
+The `simplifyGo()` function takes a DAVID functional annotation chart and creates a similarity matrix for each GO term with every other GO term by using two different similarity metrics: the jaccard cutoff (JC) and overlap coefficient (OC) where $JC = \frac{\left |A \cap B  \right |}{\left |A \cup  B  \right |}$ and $OC = \frac{\left |A \cap B  \right |}{Min(\left | A \right |,\left | B \right |)}$. This approach is based off of *[1]*. The similarity metrics are calculated within the subfunction called `similarity()`. These metrics are two different ways of assessing the degree of overlap between two gene lists. 
+
+The average score of JC and OC for each set of genes associated with a GO term is computed in a giant similarity matrix for all GO terms. Note that this procedure is very computational intensive. Finally, the matrix is filtered for a similarity cutoff of > 0.5. The function then returns this matrix.
+
+```{r simplifyGo}
+simplifyGo <- function(david_chart) {
+  
+  ### Similarity function for overlap coefficient and jaccard cutoff
+  similarity <- function(list) {
+    
+    A <- list[[1]]
+    B <- list[[2]]
+    
+    JC <- function(A, B) {
+      output <- (intersect(A, B) %>% length()) / (union(A, B) %>% length())
+      return(output)
+    }
+    
+    OC <- function(A, B) {
+      output <- (intersect(A, B) %>% length()) / (min(length(A), length(B)))
+      return(output)
+    }
+    
+    similarity <- mean(c(OC(A, B), JC(A, B)))
+    return(similarity)
+  }
+  
+  ### Create similarity matrix
+  list1 <- david_chart[ ,"Genes"] %>% strsplit(split  = ",") %>% lapply(FUN = as.numeric)
+  list2 <- list1
+  
+  computeSimilarity <- Vectorize(function(x, y) {
+    vec1 <- list1[[x]]
+    vec2 <- list2[[y]]
+    
+    similarity(list(vec1, vec2))
+  })
+  
+  filterMatrix <- outer(1:length(list1), 1:length(list2), computeSimilarity)
+  rownames(filterMatrix) <- david_chart[ ,"Term"]
+  colnames(filterMatrix) <- david_chart[ ,"Term"]
+  filterMatrix[filterMatrix < 0.5] <- 0
+  
+  return(filterMatrix)
+}
+```
+
+The `determineClusterNumbers()` function utilizes the within sum of squares (WSS) to estimate cluster number for hierachical clustering of the GO terms (based on their similarity index). The function returns a plot which is used to approximate the clusters.
+
+```{r determineClusterNumbers}
+determineClusterNumbers <- function(x, n) {
+  require(ggplot2)
+  
+  wss <- (nrow(x) - 1) * sum(apply(x, 2, var))
+  
+  for(i in 2:n) {
+    wss[i] <- sum(kmeans(x, centers = i)$withinss)
+  }
+  
+  wss <- as.data.frame(cbind(wss, clusters = 1:n))
+  
+  plot <- ggplot(wss, aes(clusters, wss)) +
+    geom_line() +
+    geom_point() +
+    theme_bw()
+  
+  return(plot)
+}
+```
+
+The `getDendrogramClusters()` function is used to extract the cluster data from the `hcut()` function. 
+
+```{r getDendrogramClusters}
+getDendrogramClusters <- function(hcut_output) {
+  clusters <- data.frame(Cluster = hcut_output$cluster %>% unname(),
+                         Term = hcut_output$labels)
+  
+  labels <- merge(data.frame(Term = labels(hcut_output %>% as.dendrogram()), 
+                             Order = 1:nrow(clusters)), clusters, "Term")
+  
+  output <- labels[order(labels$Order), ]
+  return(output)
+}
+
+```
+
+```{r lm_eqn}
+# Modified from: https://stackoverflow.com/questions/7549694/adding-regression-line-equation-and-r2-on-graph
+lm_eqn <- function(df, x, y){
+    m <- lm(y ~ x, df);
+    eq <- substitute(~~italic(r)^2~"="~r2, 
+         list(r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));                 
+}
+```
+
+# Figure 3A
+
+The DAVID files produced by querying DAVID are now loaded into memory. The optimal cluster number is calculated and then the dendrogram is created.
+
+```{r prepare_Ro_Go_Chart}
+### Load DAVID data and filter
+roUp <- read.table("david_ro_up_1000_biological_process.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+roUp <- roUp[roUp$PValue < 0.001 | roUp$FDR < 0.05, c("Term", "PValue", "Genes", "Count")]
+roDown <- read.table("david_ro_down_1000_biological_process.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE, quote = "")
+roDown <- roDown[roDown$PValue < 0.001 | roDown$FDR < 0.05, c("Term", "PValue", "Genes", "Count")]
+
+roUp <- roUp[!(roUp$Term %in% roDown$Term), ]
+roDown <- roDown[!(roDown$Term %in% roUp$Term), ]
+
+### Determine optimal cluster number
+roUpMatrix <- simplifyGo(roUp)
+determineClusterNumbers(roUpMatrix, 30)
+
+### Create dendrogram and get clusters
+roUpDendrogram <- hcut(roUpMatrix, k = 30, stand = TRUE)
+fviz_dend(roUpDendrogram, rect = TRUE, cex = 0.5, show_labels = TRUE)
+roUpClusters <- getDendrogramClusters(roUpDendrogram) 
+
+### Merge clusters with original DAVID data
+roUpClusters.mg <- merge(roUpClusters, roUp, "Term")[ ,c("Term", "PValue", "Count", "Cluster", "Order")]
+roUpClusters.mg$NegLogPValue <- -log10(roUpClusters.mg$PValue)
+roUpClusters.mg$Direction <- rep("Up", nrow(roUpClusters.mg))
+roUpClusters.mg <- roUpClusters.mg[order(roUpClusters.mg$Order), ]
+
+# write.csv to export file
+```
+
+The dendrogram data is extracted and the data file is exported. By visually inspecting each branch, we can give an overall title that best describes each of the ontologies. The resulting data file, `roUpClusters_network_data.csv` will be used to generate Figure 3A. Now, the dendrogram data is manually annotated and re-imported to R.
+
+```{r load_annotated_cluster_Ro}
+roUpChart <- read.csv("roUpClusters_network_data.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+```{r plot_Ro_Go_Chart}
+### Create Ro Chart
+roUpChart.s <- split(roUpChart, roUpChart$Category)
+roUpSummary <- data.frame(Term = names(roUpChart.s),
+                          NegLogPValue = lapply(roUpChart.s, function(x) mean(x$NegLogPValue)) %>% unlist() %>% unname(),
+                          Count = lapply(roUpChart.s, function(x) mean(x$Count)) %>% unlist() %>% unname(),
+                          stringsAsFactors = FALSE)
+roUpSummary <- roUpSummary[roUpSummary$NegLogPValue > -log(0.01), ]
+roUpSummary$Term <- factor(roUpSummary$Term, levels = roUpSummary[order(roUpSummary$NegLogPValue, decreasing = FALSE), "Term"])
+
+p1 <- 
+ggplot(roUpSummary, aes(y = NegLogPValue, x = Term)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(aes(label = round(Count)), hjust = 1.2, color = "white", size = 3.5) +
+  coord_flip() + 
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, by = 5)) +
+  xlab("") +
+  ylab("-log(p-value)") +
+  ggtitle("Control/Ro") +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 10),
+        axis.text.y = element_text(color = "grey30", size = 9),
+        axis.title.x = element_text(size = 11))
+```
+
+# Figure 3B
+
+The DAVID files produced by querying DAVID are now loaded into memory. The optimal cluster number is calculated and then the dendrogram is created.
+
+```{r prepare_RoRap_Go_Chart}
+### Load DAVID data and filter
+roRapUp <- read.table("david_roRap_up_1000_biological_process.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+roRapUp <- roRapUp[roRapUp$PValue < 0.001 | roRapUp$FDR < 0.05, c("Term", "PValue", "Genes", "Count")]
+roRapDown <- read.table("david_roRap_down_1000_biological_process.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+roRapDown <- roRapDown[roRapDown$PValue < 0.001 | roRapDown$FDR < 0.05, c("Term", "PValue", "Genes", "Count")]
+
+roRapUp <- roRapUp[!(roRapUp$Term %in% roRapDown$Term), ]
+
+### Determine optimal cluster number
+roRapUpMatrix <- simplifyGo(roRapUp)
+determineClusterNumbers(roRapUpMatrix, 30)
+
+### Create dendrogram and get clusters
+roRapUpDendrogram <- hcut(roRapUpMatrix, k = 30, stand = TRUE)
+fviz_dend(roRapUpDendrogram, rect = TRUE, cex = 0.5, show_labels = TRUE) # 803 x 469
+roRapUpClusters <- getDendrogramClusters(roRapUpDendrogram) 
+
+### Merge clusters with original DAVID data
+roRapUpClusters.mg <- merge(roRapUpClusters, roRapUp, "Term")[ ,c("Term", "PValue", "Count", "Cluster", "Order")]
+roRapUpClusters.mg$NegLogPValue <- -log10(roRapUpClusters.mg$PValue)
+roRapUpClusters.mg$Direction <- rep("Up", nrow(roRapUpClusters.mg))
+roRapUpClusters.mg <- roRapUpClusters.mg[order(roRapUpClusters.mg$Order), ]
+
+# write.csv to export file
+```
+
+The dendrogram data is extracted and the data file is exported. By visually inspecting each branch, we can give an overall title that best describes each of the ontologies. The resulting data file, `roRapUpClusters_network_data.csv` will be used to generate Figure 3B. Now, the dendrogram data is manually annotated and re-imported to R.
+
+```{r plot_RoRap_Go_Chart}
+### Create RoRap Chart
+roRapUpChart <- read.csv("roRapUpClusters_network_data.csv", header = TRUE, stringsAsFactors = FALSE)
+roRapUpChart.s <- split(roRapUpChart, roRapUpChart$Category)
+roRapUpSummary <- data.frame(Term = names(roRapUpChart.s),
+                          NegLogPValue = lapply(roRapUpChart.s, function(x) mean(x$NegLogPValue)) %>% unlist() %>% unname(),
+                          Count = lapply(roRapUpChart.s, function(x) mean(x$Count)) %>% unlist() %>% unname(),
+                          stringsAsFactors = FALSE)
+roRapUpSummary <- roRapUpSummary[roRapUpSummary$NegLogPValue > -log(0.01), ]
+roRapUpSummary$Term <- factor(roRapUpSummary$Term, levels = roRapUpSummary[order(roRapUpSummary$NegLogPValue, decreasing = FALSE), "Term"])
+
+p2 <- 
+ggplot(roRapUpSummary, aes(y = NegLogPValue, x = Term)) +
+  geom_bar(stat = "identity", fill = "palevioletred") +
+  geom_text(aes(label = round(Count)), hjust = 1.2, color = "white", size = 3.5) +
+  coord_flip() + 
+  #scale_y_continuous(limits = c(4, 16), breaks = seq(4, 16, by = 2)) +
+  xlab("") +
+  ylab("-log(p-value)") +
+  ggtitle("Ro+Rapa/Ro") +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 10),
+        axis.text.y = element_text(color = "grey30", size = 9),
+        axis.title.x = element_text(size = 11))
+```
+
+```{r combined_figure}
+# 555 x 663
+plot_grid(p1, p2, ncol = 1, align = "hv")
+```
+
+# Figure 3C
+
+The purpose of this plot is to see gene that changed in the same direction between the two calculated fold-change categories (Saline/Ro or Ro+Rap/Ro). The files `roTranssynaptic.csv` and `roRapTranssynaptic.csv` are obtained from the gene ontology website for all genes that were found in the `results_ro` or `results_RoRap` table respectively. The parent GO category is "transsynaptic signaling"" (GO:0099537): http://www.informatics.jax.org/go/term/GO:0099537.
+
+```{r load_trans_data}
+### Load data for trans-synaptic genes so they can be uniquely colored on the plot.
+transRo <- read.csv("roTranssynaptic.csv", stringsAsFactors = FALSE)
+transRo[ ,1] <- NULL
+transRoRap <- read.csv("roRapTranssynaptic.csv", stringsAsFactors = FALSE)
+transRoRap[ ,1] <- NULL
+trans <- c(transRo$genes, transRoRap$genes) %>% unique()
+```
+
+```{r load_fold_change_data}
+fc <- read.csv("finalData.csv", header = TRUE, stringsAsFactors = FALSE)
+row.names(fc) <- fc$Row.names
+fc[ ,1] <- NULL
+fc <- fc[ ,c("logFC.x", "logFC.y")]
+names(fc) <- c("RO", "RO_RAP")
+```
+
+```{r plot_quadrant_diagram}
+fc$Category <- rep("No Change", nrow(fc))
+fc[fc$RO > quantile(fc$RO, 0.75) | fc$RO_RAP > quantile(fc$RO_RAP, 0.75), "Category"] <- "Up"
+fc[fc$RO < quantile(fc$RO, 0.25) | fc$RO_RAP < quantile(fc$RO_RAP, 0.25), "Category"] <- "Down"
+fc[row.names(fc) %in% trans, "Category" ] <- "Transsynaptic"
+plotOrder <- c("No Change", "Down", "Up", "Transsynaptic")
+fc$Category <- reorder.factor(fc$Category, new.order = plotOrder)
+fc <- fc %>% arrange(Category)
+
+fcFilter <- fc %>% filter(Category == "Transsynaptic")
+rLabel <- lm_eqn(fcFilter, fcFilter$RO_RAP, fcFilter$RO)
+
+# 500 x 437
+ggplot(fcFilter, aes(x = RO_RAP, y = RO)) +
+  geom_point(shape = 21, size = 2.5, color = "black", fill = "green4") +
+  geom_smooth(method = "lm", se = FALSE) + 
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  annotate("text", x = -0.65, y = 0.8, label = rLabel, size = 6, parse = TRUE) +
+  scale_x_continuous(limits = c(-0.8, 0.8), breaks = seq(-0.8, 0.8, by = 0.4)) +
+  scale_y_continuous(limits = c(-0.8, 0.8), breaks = seq(-0.8, 0.8, by = 0.4)) +
+  xlab("Log2 Fold Change (Ro+Rapa / Ro)") +
+  ylab("Log2 Fold Change (Control / Ro)") +
+  theme_base() +
+  theme(axis.text.x = element_text(color = "grey30", size = 15),
+        axis.text.y = element_text(color = "grey30", size = 15),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16))
+```
+
+## References
+
+[1] Merico D., Isserlin R, Stueker O, Emili A, Bader G.D. (2010). Enrichment map: a network-based method for gene-set enrichment visualization and interpretation. *PLoS One* 5(11), e13984.
+
+## Session info
+
+```{r session_info}
+sessionInfo()
+```

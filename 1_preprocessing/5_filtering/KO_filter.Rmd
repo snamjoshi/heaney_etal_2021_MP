@@ -14,7 +14,7 @@ This document contains all the code needed to generate the cutoff and filtration
 
 ### Load packages
 
-```{r, message = FALSE, eval = FALSE}
+```{r, message = FALSE}
 library(ggplot2)
 library(reshape2)
 library(biomaRt)
@@ -37,7 +37,7 @@ library(RColorBrewer)
 
 The `cutoff()` function is designed to create and above and below cutoff line using the consensus data sets. For every row in the data, it indicates the percentage of genes that are now included in the cutoff point. 
 
-```{r, eval = FALSE}
+```{r}
 cutoff <- function(range) {
   
   above <- table(fullDist[range,"B_D_A_RipDist"]) +
@@ -57,7 +57,7 @@ cutoff <- function(range) {
 
 The annotation function `anno()` is used as a quick way to annotate the columns of the count data returned from Tophat (they are normally in Enterez format).
 
-```{r, eval = FALSE}
+```{r}
 anno <- function(x) {
   require(AnnotationDbi)
   require(org.Mm.eg.db)
@@ -83,7 +83,7 @@ anno <- function(x) {
 
 The count data (filtered for low counts) is loaded here. Replicates are averaged at the saline list is ordered by highest counts.
 
-```{r, eval = FALSE}
+```{r}
 nc <- read.csv("finalCountData.csv", header = TRUE)
 rownames(nc) <- nc[ ,1]
 nc <- nc[ ,-1]
@@ -102,7 +102,7 @@ ncAvg <- ncAvg[order(ncAvg$SAL_WT, decreasing = TRUE), ]
 
 We will first be loading all targets from previous data into R. The Miyashiro and Ascano data will be excluded from the final plotting because it does not have much in common with our list (similar to what was found by *Suhl et al. [1]*). However, we are still providing their data in the code below. The consensus overlap lists from *Suhl et al.* are also included below.
 
-```{r, eval = FALSE}
+```{r}
 ### Brown data
 brownDat <- read.xlsx("brown_list.xls", sheetIndex = 1, header = TRUE, startRow = 2)
 brownProbes <- brownDat[ ,"Probe.Set"] %>% as.vector()
@@ -144,7 +144,7 @@ BD <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 4, header = FALSE, startRow 
 DAPAR <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 5, header = FALSE, startRow = 2, stringsAsFactors = FALSE)$X1
 ```
 
-```{r, echo = FALSE, eval = FALSE}
+```{r, echo = FALSE}
 ### Consensus data
 BDARIP <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 2, header = FALSE, startRow = 2, stringsAsFactors = FALSE)$X1
 BDAPAR <- read.xlsx("consensus_FMRP.xlsx", sheetIndex = 3, header = FALSE, startRow = 2, stringsAsFactors = FALSE)$X1
@@ -160,7 +160,7 @@ miyashiroGenes <- read.csv("miyashiroGenes.csv", stringsAsFactors = FALSE)$x
 
 Using the above data, we can now construct a large table that includes all the genes in long format for plotting with ggplot2. The code below also has a few extra details to get the factor levels in the correct order.
 
-```{r, warning = FALSE, eval = FALSE}
+```{r, warning = FALSE}
 ### Distributions across ranked saline genes for full data sets
 fullDist <- data.frame(row.names = row.names(ncAvg) %>% toupper(),
                        order = 1:nrow(ncAvg),
@@ -195,7 +195,7 @@ orderedCoverage <- data.frame(order = 1:nrow(ncAvg),
                               coverage = coverage * 100)
 ```
 
-```{r, echo = FALSE, eval = FALSE}
+```{r}
 orderedCoverage <- read.csv("orderedCoverage.csv", stringsAsFactors = FALSE)
 ```
 
@@ -203,7 +203,7 @@ Finally, the data is filtered by including 95% of the genes that overlap with th
 
 (figure not rendered, see FigureS3.Rmd)
 
-```{r, eval = FALSE}
+```{r}
 consensusCutoff <- orderedCoverage[orderedCoverage$coverage < 95, ] %>% nrow()
 
 ### Consensus percentage graph
@@ -233,7 +233,7 @@ grid::grid.draw(rbind(gB, gA))
 
 We have taken two approaches to removing high background counts. The first approach is show here. We know potential targets and non-targets from previous data (Darnell et al. 2011 [2]). By determining the enrichment ratio between WT and KO for a given treatment, we can see where distributions of enrichment ratios for the targets or non-targets fall for all the consensus data sets. Using this, we can calibrate and approximate acceptable range of background for our cutoff.
 
-```{r, eval = FALSE}
+```{r}
 ### Create enrichment ratios of WT over KO for each treatment
 ncAvgDif <- data.frame(row.names = row.names(ncAvg),
                        SAL = ncAvg$SAL_WT / ncAvg$SAL_KO,
@@ -266,7 +266,7 @@ This gives us a cutoff of `1.112788`. In other words, a fold enrichment of this 
 
 We sought to find a more unbiased, quantitative means of assigning a threshold to the background counts. To do this, we used univariate K-means to attempt to separate out a pattern of background WT/KO enrichment from signal from the filtered data set (4120 genes).
 
-```{r, eval = FALSE}
+```{r}
 ncAvgCut <- ncAvg[1:consensusCutoff, ]
 ncAvgCut$"Saline" <- ncAvg[1:consensusCutoff, "SAL_WT"] / ncAvg[1:consensusCutoff, "SAL_KO"]
 ncAvgCut$"Ro" <- ncAvg[1:consensusCutoff, "RO_WT"] / ncAvg[1:consensusCutoff, "RO_KO"]
@@ -286,7 +286,7 @@ cutoff2
 
 We are now in a position to examine the final KO cutoff using our two separate methods. Here we simply take the average of the two cutoffs for a final cutoff assigned in the variable `KOcutoff`. This cutoff will be applied to the data by applying it to the saline fraction only. The resulting gene list will be our filtered targets.
 
-```{r, eval = FALSE}
+```{r}
 ### Define knockout cutoff
 KOcutoff <- mean(cutoff, cutoff2)
 KOcutoff
@@ -299,7 +299,7 @@ filteredTargets <- ncAvgCut[ncAvgCut$Saline > KOcutoff, 1:6]
 
 To remove mitchondrial and glial cells, we searched the MitoMiner [3] database and the Brain RNA-seq database for cell types [4]
 
-```{r, eval = FALSE}
+```{r}
 mito <- read.csv("mito.csv", header = FALSE, stringsAsFactors = FALSE)$V1
 glia <- read.csv("glial.csv", header = FALSE, stringsAsFactors = FALSE)$V1
 
@@ -312,7 +312,7 @@ finalCountData <- nc[row.names(nc) %in% row.names(filteredTargets), ]
 
 Finally, we take our filtered list and apply **limma+voom** for differential expression analysis.
 
-```{r, message = FALSE, eval = FALSE}
+```{r, message = FALSE}
 ### Preprocess data columns
 countData <- read.csv(file = "combinedCounts.csv", header = TRUE, stringsAsFactors = FALSE)
 rownames(countData) <- countData[ ,1]

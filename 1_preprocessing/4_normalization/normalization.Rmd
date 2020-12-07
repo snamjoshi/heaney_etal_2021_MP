@@ -13,7 +13,7 @@ output:
 Here we annotate our data in official gene symbol format and apply DESeq2 factor size normalization across all our libraries. We also perform filtering and some visualization of the count data before the final export.
 
 ### Load packages
-```{r, eval = FALSE, message = FALSE}
+```{r, message = FALSE}
 library(DESeq2)
 library(AnnotationDbi)
 library(org.Mm.eg.db)
@@ -28,7 +28,7 @@ library(ggthemes)
 
 The `squash()` function simply scales any data between 0-100 for easier visualization and comparison.
 
-```{r, eval = FALSE}
+```{r}
 squash <- function(x) {
   output <- ((x - min(x)) / (max(x) - min(x))) * 100
   return(output)
@@ -37,7 +37,7 @@ squash <- function(x) {
 
 The `percentChange()` function calculates the percent a measure changes from its baseline. 
 
-```{r, eval = FALSE}
+```{r}
 percentChange <- function(new, old) {
   return(((new - old) / abs(old)) * 100)
 }
@@ -47,7 +47,7 @@ percentChange <- function(new, old) {
 
 We used **HTSFilter 1.14.1** to filter the data using the standard settings.
 
-```{r, eval = FALSE}
+```{r}
 countData <- read.csv(file = "combinedCounts.csv", header = TRUE)
 rownames(countData) <- countData[ ,1]
 countData[ ,1] <- NULL
@@ -70,7 +70,7 @@ cdFilter[ ,c(11, 12)] <- NULL   # Remove duplicated Ro KO columns
 
 Annotation weas performed with the Bioconductor packages **org.Mm.eg.db** and **AnnotationDbi**. Any sequences that did not map to a gene qualifier were filtered out of the dataset.
 
-```{r, eval = FALSE, message = FALSE}
+```{r, message = FALSE}
 cdFilter$symbol <- mapIds(org.Mm.eg.db,
                       keys = row.names(cdFilter),
                       column = "SYMBOL",
@@ -88,7 +88,7 @@ cdFilter[ ,1] <- NULL
 
 First we create a metatable to organize the data. Next, the data is loaded into **DESeq2**. Since DESeq2 scaling applies across the entire library, it inflates the counts from our KO libraries. To fix this, we scale back the KO counts using ratios between WT and KO counts obtained from the BioAnalyzer results prior to sequencing. Then, all counts were collapsed by averaging across rows.
 
-```{r, eval = FALSE}
+```{r}
 ### Create metatable
 metaTable <- data.frame(LibraryName = names(cdFilter),
                         LibraryLayout = rep("SINGLE", 16),
@@ -132,7 +132,7 @@ nscMean <- data.frame(row.names = row.names(cdFilterScaled),
 
 For count visualization, we first plotted the WT and KO counts be each treatment
 
-```{r, eval = FALSE, message = FALSE}
+```{r, message = FALSE}
 ### Create variables for plotting with ggplot2
 nscMean.m <- melt(nscMean)
 nscMean.m$Genotype <- c(rep("WT", 14543), rep("KO", 14543), rep("WT", 14543), rep("KO", 14543), rep("WT", 14543), rep("KO", 14543))
@@ -152,7 +152,7 @@ ggplot(nscMean.m, aes(x = Genotype, y = value, color = Genotype)) +
 
 Next, we plotted WT and KO counts with known FMRP targets and non-targets (from *Darnell et al. 2011 [1]*) (figure not rendered, see FigureS2.Rmd)
 
-```{r, eval = FALSE, message = FALSE}
+```{r, message = FALSE}
 ### Load targets and non-targets
 targets <- c("Gabbr1", "Gabbr2","Nisch", "Prrc2a", "Kif1a", "Grin2a", "Adgrb2", "Cyfip2", "Map1b", "Bsn", "Adcy1", "Pde2a", "Lingo1", "Grin2b")
 nontargets <- c("Pabpc1", "Tmem65", "Hprt1", "St8sia3", "Sae1", "Glrb", "Gria2", "Tcerg1", "Eif3a", "Slc35f1", "Atp6ap2", "Vldlr")
@@ -180,7 +180,7 @@ ggplot(nscRawTargets.m, aes(x = GenotypeOrder, y = value, group = group, color =
 
 Finally, for the percent changes between targets and non-targets reported in the paper, we simply calculated the percent changes across all the dataframe for the mean normalized (scaled) counts.
 
-```{r, eval = FALSE}
+```{r}
 new <- nscRawTargets[nscRawTargets$targets == "Target", 1:6] %>% colMeans()
 old <- nscRawTargets[nscRawTargets$targets == "Non-target", 1:6] %>% colMeans()
 

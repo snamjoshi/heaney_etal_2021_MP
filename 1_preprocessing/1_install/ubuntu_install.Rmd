@@ -14,7 +14,7 @@ This file contains the shell commands followed on a fresh Ubuntu install to add 
 
 ## System basics
 
-```{r, engine = 'bash', eval = FALSE}
+```{r, engine = 'bash'}
 # Install Zshell
 sudo apt-get install zsh
 sudo apt-get install git-core
@@ -38,7 +38,7 @@ sudo apt-get install oracle-java8-installer
 
 ## Python and pip
 
-```{r, engine = 'bash', eval = FALSE}
+```{r, engine = 'bash'}
 # Install pip
 sudo apt-get update
 sudo apt-get upgrade
@@ -58,7 +58,7 @@ sudo apt-get install python-dev
 
 ## R and R studio
 
-```{r, engine = 'bash', eval = FALSE}
+```{r, engine = 'bash'}
 # Install R Base
 sudo echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | sudo tee -a /etc/apt/sources.list
 gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
@@ -75,7 +75,7 @@ rm rstudio-0.99.903-amd64.deb
 
 ## RNAseq tools
 
-```{r, engine = 'bash', eval = FALSE}
+```{r, engine = 'bash'}
 # Install FastQC 0.11.5
 cd /usr/src
 sudo curl -O http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip
@@ -164,7 +164,7 @@ sudo apt-get install bedtools
 
 ## R and Bioconductor packages
 
-```{r, engine = 'bash', eval = FALSE}
+```{r, engine = 'bash'}
 # Prepare to install R/Bioconductor packages
 sudo chown $USER -R /usr/lib/R
 sudo chown $USER -R /usr/share/R

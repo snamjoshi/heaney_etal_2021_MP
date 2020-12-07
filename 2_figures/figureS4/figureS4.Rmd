@@ -1,0 +1,364 @@
+---
+title: "Figure S4 (Draft 1)"
+author: "Sanjeev Namjoshi"
+date: "November 13th, 2018"
+output:
+  pdf_document: 
+    toc: false
+    toc_depth: 5
+  html_notebook: default
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
+```
+
+```{r packages}
+library(tibble)
+library(limma)
+library(magrittr)
+library(ggplot2)
+library(AnnotationDbi)
+library(org.Mm.eg.db)
+library(edgeR)
+library(cowplot)
+library(gdata)
+library(RDAVIDWebService)
+```
+
+```{r functions}
+anno <- function(x) {
+  require(AnnotationDbi)
+  require(org.Mm.eg.db)
+  
+  ### Annotate
+  x$symbol <- mapIds(org.Mm.eg.db,
+                     keys = row.names(x),
+                     column = "SYMBOL",
+                     keytype = "ENSEMBL",
+                     multiVals = "first")
+  
+  ### Remove rows with no gene mapping
+  x <- subset(x, select = c(17,1:16))
+  x <- x[complete.cases(x), ]
+  rownames(x) <- make.names(x$symbol, unique = TRUE)
+  x[ ,1] <- NULL
+  
+  return(x)
+}
+
+functionalAnnotationChart <- function(genes, terms, filename) {
+  
+  david <- DAVIDWebService$new(email = "snamjoshi87@utexas.edu", url = "https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
+  
+  setTimeOut(david, 80000)
+  
+  egenes <- AnnotationDbi::select(org.Mm.eg.db, genes, "ENTREZID", "SYMBOL")[,2]
+  
+  addList(david, egenes,
+          idType = "ENTREZ_GENE_ID",
+          listName = "Functional Annotation Chart",
+          listType = "Gene")
+  
+  setAnnotationCategories(david, terms)
+  getFunctionalAnnotationChartFile(david, fileName = filename)
+  
+  return(paste("Ouput DAVID analysis file:", filename))
+}
+```
+
+```{r load_filtered_targets}
+filteredTargets <- read.csv("filteredTargets.csv") %>% column_to_rownames("X")
+```
+
+```{r load_final_count_data}
+nc <- read.csv("finalCountData.csv", header = TRUE)
+rownames(nc) <- nc[ ,1]
+nc <- nc[ ,-1]
+
+ncAvg <- data.frame(SAL_WT = rowMeans(nc[ ,1:3]),
+                    SAL_KO = rowMeans(nc[ ,4:6]),
+                    RO_WT = rowMeans(nc[ ,7:9]),
+                    RO_KO = nc[ ,10],
+                    RO_RAP_WT = rowMeans(nc[ ,11:13]),
+                    RO_RAP_KO = rowMeans(nc[ ,14:16]))
+
+ncAvg <- ncAvg[order(ncAvg$SAL_WT, decreasing = TRUE), ]
+```
+
+```{r filter_mito_genes}
+mito <- read.csv("mito.csv", header = FALSE, stringsAsFactors = FALSE)$V1
+glia <- read.csv("glial.csv", header = FALSE, stringsAsFactors = FALSE)$V1
+
+filteredTargets <- filteredTargets[!(row.names(filteredTargets) %in% c(mito, glia)), ]
+
+finalCountData <- nc[row.names(nc) %in% row.names(filteredTargets), ]
+```
+
+```{r filter_with_limma}
+### Preprocess data columns
+countData <- read.csv(file = "combinedCounts.csv", header = TRUE, stringsAsFactors = FALSE)
+rownames(countData) <- countData[ ,1]
+countData[ ,1] <- NULL
+cdMain <- subset(countData, select = c(7:12, 16:18, 3:6, 13:15)) %>% anno()
+#extras <- cdMain[row.names(cdMain) %in% c("Nrxn1", "Nlgn3"), 1:9]
+cdMain <- cdMain[ ,1:9]
+cdMain <- cdMain[row.names(cdMain) %in% row.names(finalCountData), ]
+#cdMain <- rbind(cdMain, extras)
+
+### Analyze with limma+voom
+dge <- DGEList(counts = cdMain)
+dge <- calcNormFactors(dge)
+dge <- cpm(dge, log = TRUE, prior.count = 3)
+design <- model.matrix(~ 0+factor(c(1,1,1,2,2,2,3,3,3)))
+colnames(design) <- c("RO_RAP_WT", "RO_WT", "SAL_WT")
+
+contrast.matrix <- makeContrasts(SAL_WT-RO_WT, RO_RAP_WT-RO_WT, levels = design)
+
+v <- voom(cdMain, design, plot = FALSE)
+fit <- lmFit(v, design)
+fit2 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit2)
+resultsRo <- topTable(fit2, coef = 1, number = 25000)
+resultsRoRap <- topTable(fit2, coef = 2, number = 25000)
+
+resultsRo$Threshold <- ifelse(resultsRo$adj.P.Val < 0.1, "Significant", "Non-Significant")
+resultsRoRap$Threshold <- ifelse(resultsRo$adj.P.Val < 0.1, "Significant", "Non-Significant")
+
+#f1 <- resultsRo[row.names(resultsRo) %in% c("Nrxn1", "Nlgn1", "Nlgn2", "Nlgn3"), ]
+#f2 <- resultsRoRap[row.names(resultsRoRap) %in% c("Nrxn1", "Nlgn1", "Nlgn2", "Nlgn3"), ]
+
+#write.csv(f1, "for_chelcie1.csv")
+#write.csv(f2, "for_chelcie2.csv")
+```
+
+# Figures S4B/C
+
+```{r ma_plots}
+ma1 <-
+  ggplot(resultsRo, aes(x = AveExpr, y = logFC, color = Threshold)) +
+  geom_point(alpha = 0.4, size = 0.8) +
+  geom_hline(aes(yintercept = 0), color = "blue", size = 0.5) +
+  scale_color_manual(values = c("grey40", "steelblue")) +
+  ylim(-1.5,1.5) +
+  xlim(6.5,14) +
+  xlab("Mean of Normalized Counts") +
+  ylab("Log2 Fold-Change") +
+  ggtitle("Control/Ro") +
+  theme_bw() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+ma2 <-
+  ggplot(resultsRoRap, aes(x = AveExpr, y = logFC, color = Threshold)) +
+  geom_point(alpha = 0.4, size = 0.8) +
+  geom_hline(aes(yintercept = 0), color = "blue", size = 0.5) +
+  scale_color_manual(values = c("grey40", "palevioletred")) +
+  ylim(-1.5,1.5) +
+  xlim(6.5,14) +
+  xlab("Mean of Normalized Counts") +
+  ylab("Log2 Fold-Change") +
+  ggtitle("Ro+Rapa/Ro") +
+  theme_bw() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        axis.title.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15))
+```
+
+```{r volcano_plots}
+vp1 <-
+  ggplot(resultsRo, aes(x = logFC, y = -log10(adj.P.Val), color = Threshold)) +
+  geom_point(alpha = 0.4, size = 0.5) +
+  xlim(-1,1) +
+  ylim(0, 2.5) +
+  xlab("Log2 Fold-Change") +
+  ylab("-log10 FDR Cutoff") +
+  scale_color_manual(values = c("grey75", "steelblue")) +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 15))
+
+vp2 <-
+  ggplot(resultsRoRap, aes(x = logFC, y = -log10(adj.P.Val), color = Threshold)) +
+  geom_point(alpha = 0.4, size = 0.5) +
+  xlim(-1.3, 1.3) +
+  ylim(0, 2.5) +
+  xlab("Log2 Fold-Change") +
+  ylab("-log10 FDR Cutoff") +
+  scale_color_manual(values = c("grey75", "palevioletred")) +
+  theme_bw() +
+  theme(legend.position = "none",
+        axis.title.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15))
+```
+
+```{r combine_plots}
+### 704 x 613
+plot_grid(ma1, ma2, vp1, vp2, 
+          ncol = 2,
+          nrow = 2,
+          align = "hv")
+```
+
+# Figure S4D
+
+```{r prepare_heatmap}
+### Heatmap for fold-change data
+heatmap <- merge(resultsRo, resultsRoRap, by = 0)
+heatmap <- heatmap[heatmap$adj.P.Val.x < 0.1 & heatmap$adj.P.Val.y < 0.1, ]
+heatmap <- heatmap[(heatmap$logFC.x > -2 & heatmap$logFC.x < 2) & (heatmap$logFC.y > -2 & heatmap$logFC.y < 2), ]
+
+heatmap <- data.frame(row.names = heatmap$Row.names,
+                  Ro = heatmap$logFC.x,
+                  RoRap = heatmap$logFC.y)
+
+### Import gene annotations
+row_anno <- read.csv("heatmap_genes.csv") %>% column_to_rownames("genes")
+
+### Heatmap for raw count data
+finalCountData.log <- apply(finalCountData, 2, log2)
+finalCountData.log <- finalCountData.log[row.names(finalCountData.log) %in% row.names(heatmap), c("SAL_WT1", "SAL_WT2", "SAL_WT3", "RO_WT1", "RO_WT2", "RO_WT3", "RO_RAP_WT1", "RO_RAP_WT2", "RO_RAP_WT3")]
+
+ph1 <-
+pheatmap(finalCountData.log,
+         color = rev(brewer.pal(11, "RdYlBu")), fontsize = 7,
+         clustering_method = "average",
+         clustering_distance_rows = "euclidean",
+         clustering_distance_cols = "maximum",
+         #annotation_row = row_anno,
+         fontsize_col = 9,
+         show_rownames = FALSE)
+```
+
+```{r annotate}
+clusters <- 
+  sort(cutree(ph1$tree_row, k = 7)) %>%
+  as.data.frame() %>%
+  set_colnames("Cluster") %>%
+  rownames_to_column("Gene") %>%
+  full_join(rownames(finalCountData.log[ph1$tree_row[["order"]],]) %>%
+            as.data.frame() %>%
+            set_colnames("Gene"), .) %>%
+  split(.$Cluster)
+
+setwd("~/Dropbox/Raab_Graham_Lab/RNASeq_Analysis_August_2016/R Scripts/Analysis_111816/Rmarkdown/heaney_et_al/figures_11-11-18/figureS4/")
+
+### David clustering and export
+for(i in 1:length(clusters)) {
+  functionalAnnotationChart(genes = clusters[[i]]$Gene,
+                            terms = c("GOTERM_BP_ALL"),
+                            filename = paste("david_bp_cluster_", i, ".txt", sep = ""))
+}
+
+### David import
+david_path <- list.files(getwd(), pattern = "_cluster_")
+david_km <- list()
+for(i in 1:length(david_path)) {
+  david_km[[i]] <- read.table(david_path[[i]], sep = "\t", header = TRUE, stringsAsFactors = FALSE, quote = "", comment.char = "")
+}
+```
+
+```{r plot}
+# lapply(1:7, function(x) david_km[[x]]$Term[1:10])
+topCat <- c("Cell signaling and transduction",
+            "Metabolism and gene expression",
+            "Regulation of cell signaling and transduction",
+            "Nervous system development",
+            "Organelle Assembly",
+            "Cell cycle and localization",
+            "Cell cycle and localization")
+
+row_anno_cat <- rep(topCat, lapply(clusters, nrow) %>% unlist())
+
+row_anno <- do.call("rbind", clusters)
+row.names(row_anno) <- NULL
+row_anno <- column_to_rownames(row_anno, "Gene")
+row_anno$Cluster <- row_anno_cat
+names(row_anno) <- "GO Biological Process"
+
+### 508 x 560
+pheatmap(finalCountData.log,
+         color = rev(brewer.pal(11, "RdYlBu")), fontsize = 7,
+         clustering_method = "average",
+         clustering_distance_rows = "euclidean",
+         clustering_distance_cols = "maximum",
+         annotation_row = row_anno,
+         fontsize_col = 9,
+         show_rownames = FALSE)
+```
+
+# Figure S4E 
+
+???
+
+# Figure S4F
+
+```{r load_trans_data}
+### Load data for trans-synaptic genes so they can be uniquely colored on the plot.
+transRo <- read.csv("roTranssynaptic.csv", stringsAsFactors = FALSE)
+transRo[ ,1] <- NULL
+transRoRap <- read.csv("roRapTranssynaptic.csv", stringsAsFactors = FALSE)
+transRoRap[ ,1] <- NULL
+trans <- c(transRo$genes, transRoRap$genes) %>% unique()
+
+full_join(transRo[ ,c(1:2)], transRoRap[ ,c(1:2)], by = "genes") %>%
+  set_colnames(c("genes", "Saline/Ro", "roRap/Ro")) %>%
+  arrange(genes) %>%
+  write.csv("all_transsynaptic.csv")
+```
+
+```{r load_fold_change_data}
+fc <- read.csv("finalData.csv", header = TRUE, stringsAsFactors = FALSE)
+row.names(fc) <- fc$Row.names
+fc[ ,1] <- NULL
+fc <- fc[ ,c("logFC.x", "logFC.y")]
+names(fc) <- c("RO", "RO_RAP")
+```
+
+```{r plot_quadrant_diagram}
+fc$Category <- rep("Not Significant", nrow(fc))
+fc[fc$RO > quantile(fc$RO, 0.75) | fc$RO_RAP > quantile(fc$RO_RAP, 0.75), "Category"] <- "Up"
+fc[fc$RO < quantile(fc$RO, 0.25) | fc$RO_RAP < quantile(fc$RO_RAP, 0.25), "Category"] <- "Down"
+fc[row.names(fc) %in% trans, "Category" ] <- "Transsynaptic"
+plotOrder <- c("Not Significant", "Down", "Up", "Transsynaptic")
+fc$Category <- reorder.factor(fc$Category, new.order = plotOrder)
+fc <- fc %>% arrange(Category)
+
+### 510 x 376
+ggplot(fc, aes(x = RO_RAP, y = RO, color = Category, fill = Category)) +
+  geom_point(shape = 21) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  scale_x_continuous(limits = c(-1.5, 1.5)) +
+  scale_y_continuous(limits = c(-1.5, 1.5)) +
+  xlab("Log2 Fold Change (Ro+Rap / Ro)") +
+  ylab("Log2 Fold Change (Saline / Ro)") +
+  scale_fill_manual(breaks = c("Not Significant", "Transsynaptic"), values = c("grey50", "deepskyblue1", "deepskyblue1", "red2")) +
+  scale_color_manual(breaks = c("Not Significant", "Transsynaptic"), values = c("black", "black", "black", "black")) +
+  theme_bw() +
+  theme(axis.text.x = element_text(color = "grey30", size = 15),
+        axis.text.y = element_text(color = "grey30", size = 15),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14))
+```

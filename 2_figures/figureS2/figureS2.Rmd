@@ -1,0 +1,716 @@
+---
+title: "Figure S2 (Draft 1)"
+author: "Sanjeev Namjoshi"
+date: "November 12th, 2018"
+output:
+  pdf_document: 
+    toc: false
+    toc_depth: 5
+  html_notebook: default
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
+```
+
+```{r packages}
+library(DESeq2)
+library(magrittr)
+library(ggplot2)
+library(ggthemes)
+library(cowplot)
+library(pheatmap)
+library(RColorBrewer)
+library(HTSFilter)
+library(org.Mm.eg.db)
+library(AnnotationDbi)
+library(tibble)
+library(reshape2)
+library(dplyr)
+library(hexbin)
+```
+
+```{r functions}
+squash <- function(x) {
+  output <- ((x - min(x)) / (max(x) - min(x))) * 100
+  return(output)
+}
+
+# Modified from: https://stackoverflow.com/questions/7549694/adding-regression-line-equation-and-r2-on-graph
+lm_eqn <- function(df, x, y){
+    m <- lm(y ~ x, df);
+    eq <- substitute(~~italic(r)^2~"="~r2, 
+         list(r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));                 
+}
+```
+
+```{r load_transform_data}
+### Load count data
+countData1 <- read.csv("countData_july.csv", header = TRUE)
+rownames(countData1) <- countData1[ ,1]
+countData1[ ,1] <- NULL
+
+countData2 <- read.csv("countData_aug.csv", header = TRUE)
+countData2[ ,1] <- NULL
+names(countData2) <- gsub("_T1", "_T3", names(countData2))
+names(countData2) <- gsub("_T2", "_T4", names(countData2))
+
+countData <- cbind(countData1, countData2) %>% as.data.frame()
+
+### Create metatable
+metaTable <- data.frame(LibraryName = names(countData),
+                        technical = c(rep(1:2, 21), rep(3:4, 21)))
+
+metaTable$LibraryName <- as.factor(metaTable$LibraryName)
+metaTable$technical <- as.factor(metaTable$technical)
+metaTable$Counts <- paste(metaTable$LibraryName, "count", sep = ".")
+
+rownames(metaTable) <- metaTable[ ,1]   # Set first column to row names
+metaTable[ ,1] <- NULL
+
+### Collapse technical replicates
+dd <- DESeqDataSetFromMatrix(countData = countData,
+                             colData = metaTable,
+                             design = ~ technical)
+
+dd$technical <- gsub("_T1|_T2|_T3|_T4", "", row.names(metaTable))
+ddRep <- collapseReplicates(dd, groupby = dd$technical)
+ddRep$technical <- as.factor(ddRep$technical)
+
+### rlog transformation of data
+rd <- rlog(ddRep)
+ddRep <- estimateSizeFactors(ddRep)
+rdCounts <- assay(rd) %>% as.data.frame()
+```
+
+# Figure S2A
+
+```{r count_correlation_plots_2}
+p2<-
+ggplot(rdCounts, aes(SAL_WT1, SAL_WT2)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$SAL_WT1, rdCounts$SAL_WT2), size = 5, parse = TRUE) +
+  #geom_text(x = 2, y = 18, label = lm_eqn(rdCounts, rdCounts$SAL_WT1, rdCounts$SAL_WT2), parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "firebrick", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "grey30", size = 15),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p3 <- ggplot(rdCounts, aes(SAL_WT2, SAL_WT3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$SAL_WT2, rdCounts$SAL_WT3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "firebrick", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p4 <- ggplot(rdCounts, aes(SAL_WT1, SAL_WT3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$SAL_WT1, rdCounts$SAL_WT3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "firebrick", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+### Saline KO scatterplots
+p5 <- ggplot(rdCounts, aes(SAL_KO1, SAL_KO2)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$SAL_KO1, rdCounts$SAL_KO2), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "lightcoral", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p6 <- ggplot(rdCounts, aes(SAL_KO2, SAL_KO3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$SAL_KO2, rdCounts$SAL_KO3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "lightcoral", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "grey30", size = 15),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p7 <- ggplot(rdCounts, aes(SAL_KO1, SAL_KO3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$SAL_KO1, rdCounts$SAL_KO3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "lightcoral", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+### Ro WT scatteplots
+p8 <- ggplot(rdCounts, aes(RO_WT1, RO_WT2)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_WT1, rdCounts$RO_WT2), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "chartreuse4", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p9 <- ggplot(rdCounts, aes(RO_WT2, RO_WT3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_WT2, rdCounts$RO_WT3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "chartreuse4", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p10 <- ggplot(rdCounts, aes(RO_WT1, RO_WT3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_WT1, rdCounts$RO_WT3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "chartreuse4", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "grey30", size = 15),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+### Ro KO histogram
+p11 <- ggplot(rdCounts, aes(RO_KO2, RO_KO2)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_KO2, rdCounts$RO_KO2), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "darkolivegreen3", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+### Ro Rap WT scatterplots
+p12 <- ggplot(rdCounts, aes(RO_RAP_WT1, RO_RAP_WT2)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_RAP_WT1, rdCounts$RO_RAP_WT2), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "dodgerblue3", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p13 <- ggplot(rdCounts, aes(RO_RAP_WT2, RO_RAP_WT3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_RAP_WT2, rdCounts$RO_RAP_WT3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "dodgerblue3", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p14 <- ggplot(rdCounts, aes(RO_RAP_WT1, RO_RAP_WT3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_RAP_WT1, rdCounts$RO_RAP_WT3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "dodgerblue3", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 15),
+        axis.text.y = element_text(color = "grey30", size = 15),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+### Ro Rap KO scatterplots
+p15 <- ggplot(rdCounts, aes(RO_RAP_KO1, RO_RAP_KO2)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_RAP_KO1, rdCounts$RO_RAP_KO2), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "cadetblue3", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 15),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p16 <- ggplot(rdCounts, aes(RO_RAP_KO2, RO_RAP_KO3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_RAP_KO2, rdCounts$RO_RAP_KO3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "cadetblue3", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 15),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+p17 <- ggplot(rdCounts, aes(RO_RAP_KO1, RO_RAP_KO3)) +
+  geom_abline(slope = 1, intercept = 0, color = "grey30") +
+  geom_bin2d(bins = 75) +
+  annotate("text", x = 4, y = 19, label = lm_eqn(rdCounts, rdCounts$RO_RAP_KO1, rdCounts$RO_RAP_KO3), size = 5, parse = TRUE) +
+  scale_fill_gradient(name = "Count", low = "cadetblue3", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 15),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+### 1025 x 784
+plot_grid(p2, p3, p4, p5,
+          p6, p7, p8, p9,
+          p10, p11, p12, p13,
+          p14, p15, p16, p17,
+          ncol = 4,
+          nrow = 4,
+          align = "hv")
+
+### Plot legends
+ggplot(rdCounts, aes(RO_RAP_KO1, RO_RAP_KO3)) +
+  geom_bin2d(bins = 75) +
+  scale_fill_gradient(name = "Count", low = "black", high = "white", limits = c(0, 2000)) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(legend.position = "bottom", 
+        legend.text = element_text(angle = 35, hjust = 1, vjust = 1))
+```
+
+```{r count_correlation_plots}
+### Saline WT scatterplots
+p2 <- ggplot(rdCounts, aes(SAL_WT1, SAL_WT2)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "firebrick") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "grey30", size = 8),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p3 <- ggplot(rdCounts, aes(SAL_WT2, SAL_WT3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "firebrick") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p4 <- ggplot(rdCounts, aes(SAL_WT1, SAL_WT3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "firebrick") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+### Saline KO scatterplots
+p5 <- ggplot(rdCounts, aes(SAL_KO1, SAL_KO2)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "lightcoral") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p6 <- ggplot(rdCounts, aes(SAL_KO2, SAL_KO3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "lightcoral") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "grey30", size = 8),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p7 <- ggplot(rdCounts, aes(SAL_KO1, SAL_KO3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "lightcoral") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+### Ro WT scatteplots
+p8 <- ggplot(rdCounts, aes(RO_WT1, RO_WT2)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "chartreuse4") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p9 <- ggplot(rdCounts, aes(RO_WT2, RO_WT3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "chartreuse4") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p10 <- ggplot(rdCounts, aes(RO_WT1, RO_WT3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "chartreuse4") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "grey30", size = 8),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+### Ro KO histogram
+p11 <- ggplot(rdCounts, aes(RO_KO2, RO_KO2)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "darkolivegreen3") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+### Ro Rap WT scatterplots
+p12 <- ggplot(rdCounts, aes(RO_RAP_WT1, RO_RAP_WT2)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "dodgerblue3") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p13 <- ggplot(rdCounts, aes(RO_RAP_WT2, RO_RAP_WT3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "dodgerblue3") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p14 <- ggplot(rdCounts, aes(RO_RAP_WT1, RO_RAP_WT3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "dodgerblue3") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 8),
+        axis.text.y = element_text(color = "grey30", size = 8),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+### Ro Rap KO scatterplots
+p15 <- ggplot(rdCounts, aes(RO_RAP_KO1, RO_RAP_KO2)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "cadetblue3") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 8),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p16 <- ggplot(rdCounts, aes(RO_RAP_KO2, RO_RAP_KO3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "cadetblue3") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 8),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+p17 <- ggplot(rdCounts, aes(RO_RAP_KO1, RO_RAP_KO3)) +
+  geom_point(size = 0.5, alpha = 0.3, color = "cadetblue3") +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  scale_y_continuous(limits = c(0, 20), breaks = seq(0, 20, 5)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(color = "grey30", size = 8),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "grey30", size = 11),
+        axis.title.y = element_text(color = "grey30", size = 11))
+
+### Fully arranged (858 x 681)
+plot_grid(p2, p3, p4, p5,
+          p6, p7, p8, p9,
+          p10, p11, p12, p13,
+          p14, p15, p16, p17,
+          ncol = 4,
+          nrow = 4,
+          align = "hv")
+ggsave("/home/sanjeev/Dropbox/Raab_Graham_Lab/RNASeq_Analysis_August_2016/R Scripts/Analysis_111816/Rmarkdown/heaney_et_al/figures_11-11-18/figureS2/S2A.png", width = 32, height = 20, units = "cm")
+dev.off()
+```
+
+# Figure S2B
+
+```{r PCA}
+# Arrange variables for plotting with ggplot2
+rdNoTotal <- rd[ ,rd$technical %in% colData(rd)[3:18, 1]]
+pcaDatNoTotal <- plotPCA(rdNoTotal, intgroup = "technical", returnData = TRUE)
+percentVar <- round(100 * attr(pcaDatNoTotal, "percentVar"))
+
+### 493 x 402
+ggplot(pcaDatNoTotal, aes(PC1, PC2, color = technical, label = name)) +
+  geom_point(size = 3) +
+  geom_text(aes(label = name), size = 4, hjust = 0.3, vjust = -0.5) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_vline(aes(xintercept = 0)) +
+  scale_color_manual(values = c(rep("darkolivegreen3", 1), rep("cadetblue3", 3), rep("dodgerblue3", 3), rep("chartreuse4", 3), rep("lightcoral", 3), rep("firebrick", 3))) +
+  theme_base() +
+  theme(axis.text.x = element_text(color = "grey30", size = 15),
+        axis.text.y = element_text(color = "grey30", size = 15),
+        axis.title.x = element_text(color = "grey30", size = 16),
+        axis.title.y = element_text(color = "grey30", size = 16),
+        legend.position = "none")
+
+```
+
+# Figure S2C
+
+```{r distance_matrix}
+sampleDists <- dist(t(assay(rdNoTotal)))
+
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- colnames(rdNoTotal)
+colnames(sampleDistMatrix) <- NULL
+colors <- colorRampPalette(brewer.pal(9, "BuPu"))(255)
+
+### 522 x 387
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows = sampleDists,
+         clustering_distance_cols = sampleDists,
+         clustering_method = "average",
+         col = colors)
+```
+
+# Figure S2D
+
+```{r count_filtering}
+countData <- read.csv(file = "combinedCounts.csv", header = TRUE)
+rownames(countData) <- countData[ ,1]
+countData[ ,1] <- NULL
+
+countData$RO_KO1 <- countData$RO_KO2
+countData$RO_KO3 <- countData$RO_KO2
+
+cdMain <- subset(countData, select = c(16:18, 13:15, 10:12, 3, 22, 23, 7:9, 4:6))
+conds <- sapply(names(cdMain), function(x) substr(x, 1, nchar(x)-1)) %>% unname
+
+filter <- HTSFilter(x = cdMain, 
+                    conds = conds,
+                    normalization = "none")
+
+cdFilter <- as.data.frame(filter$filteredData)
+cdFilter[ ,c(11, 12)] <- NULL   # Remove duplicated Ro KO columns
+```
+
+```{r annotation}
+cdFilter$symbol <- mapIds(org.Mm.eg.db,
+                      keys = row.names(cdFilter),
+                      column = "SYMBOL",
+                      keytype = "ENSEMBL",
+                      multiVals = "first")
+
+### Remove rows with no gene mapping
+cdFilter <- subset(cdFilter, select = c(17, 1:16))
+cdFilter <- cdFilter[complete.cases(cdFilter), ]
+rownames(cdFilter) <- make.names(cdFilter$symbol, unique = TRUE)
+cdFilter[ ,1] <- NULL
+```
+
+```{r normalization}
+### Create metatable
+metaTable <- data.frame(LibraryName = names(cdFilter),
+                        LibraryLayout = rep("SINGLE", 16),
+                        condition = c(rep("WT", 3), rep("KO", 3), rep("WT", 3), "KO", rep("WT", 3), rep("KO", 3)))
+rownames(metaTable) <- metaTable[ ,1]   # Set first column to row names
+metaTable[ ,1] <- NULL
+
+### Get normalized counts
+dd <- DESeqDataSetFromMatrix(countData = cdFilter,
+                               colData = metaTable,
+                               design = ~ 1)
+dd <- estimateSizeFactors(dd)
+nc <- as.data.frame(counts(dd, normalize = TRUE))
+
+### Scale by BioAnalyzer values
+BA <- read.csv("BA_values.csv", header = TRUE, stringsAsFactors = FALSE)
+BA$mean <- rowMeans(BA[ ,2:4], na.rm = TRUE)
+
+scale <- c(RO = BA$mean[2] / BA$mean[5],
+           RO_RAP = BA$mean[3] / BA$mean[4],
+           SAL = BA$mean[6] / BA$mean[7])
+
+cdFilterScaled <- nc
+
+cdFilterScaled[ ,10] <- cdFilterScaled[ ,10] / (scale[1] + 1)         # Scale Ro
+cdFilterScaled[ ,14:16] <- cdFilterScaled[ ,14:16] / (scale[2] + 1)   # Scale Ro Rap
+cdFilterScaled[ ,4:6] <- cdFilterScaled[ ,4:6] / (scale[3] + 1)       # Scale Sal
+
+### Average across rows
+nscMean <- data.frame(row.names = row.names(cdFilterScaled),
+                     SAL_WT = rowMeans(cdFilterScaled[ ,1:3]),
+                     SAL_KO = rowMeans(cdFilterScaled[ ,4:6]),
+                     RO_WT = rowMeans(cdFilterScaled[ ,7:9]),
+                     RO_KO = cdFilterScaled[ ,10],
+                     RO_RAP_WT = rowMeans(cdFilterScaled[ ,11:13]),
+                     RO_RAP_KO = rowMeans(cdFilterScaled[ ,14:16])) %>% squash()
+
+```
+
+```{r plot_targets_non_FMRP}
+### Load targets and non-targets
+targets <- c("Gabbr1", "Gabbr2","Nisch", "Prrc2a", "Kif1a", "Grin2a", "Adgrb2", "Cyfip2", "Map1b", "Bsn", "Adcy1", "Pde2a", "Lingo1", "Grin2b")
+nontargets <- c("Pabpc1", "Tmem65", "Hprt1", "St8sia3", "Sae1", "Glrb", "Gria2", "Tcerg1", "Eif3a", "Slc35f1", "Atp6ap2", "Vldlr")
+
+### Prepare variables for plotting
+nscRawTargets <- nscMean[row.names(nscMean) %in% c(targets, nontargets), ] %>% squash()
+nscRawTargets$targets <- ifelse(row.names(nscRawTargets) %in% targets, "Target", "Non-target")
+nscRawTargets.m <- melt(nscRawTargets)
+nscRawTargets.m$Genotype <- c(rep("WT", 25), rep("KO", 25), rep("WT", 25), rep("KO", 25), rep("WT", 25), rep("KO", 25))
+nscRawTargets.m$variable <- c(rep("Control", 50), rep("Ro", 50), rep("Ro + Rapa", 50))
+nscRawTargets.m$group <- rep(1:25, 6)
+nscRawTargets.m$varOrder <- factor(nscRawTargets.m$variable, levels = c("Control", "Ro", "Ro + Rapa"))
+nscRawTargets.m$GenotypeOrder <- factor(nscRawTargets.m$Genotype, levels = c("WT", "KO"))
+
+### Plot WT v. KO for FMRP targets and non-targets (436 x 303) --> Now (686 x 477)
+ggplot(nscRawTargets.m, aes(x = GenotypeOrder, y = value, group = group, color = targets)) +
+  geom_point() +
+  geom_line() +
+  facet_grid(~ varOrder) +
+  xlab("") +
+  ylab("Scaled Counts") +
+  theme_bw() +
+  #scale_color_discrete(name = "FMRP Targets", ) +
+  scale_color_manual(name = "FMRP Targets", values = c("grey75", "lightslateblue")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.y = element_text(size = 16),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        strip.text = element_text(size = 15))
+```
+
+# Figure S2E
+
+```{r}
+ipDat <- 
+  read.csv("S2E_data.csv", header = TRUE) %>%
+  column_to_rownames("X")
+
+ipMean <- 
+  ipDat[ ,1:3] %>% 
+  melt() %>% 
+  mutate(Gene = rep(c("Gabar1", "Gabar2"), 3),
+         variable = rep(c("Ro", "Control", "Fmr1 KO"), each = 2))
+
+ipMean$variable <- factor(ipMean$variable, levels = c("Control", "Ro", "Fmr1 KO"))
+
+ipSE <- 
+  ipDat[ ,4:6] %>% 
+  melt() %>%
+  mutate(Gene = rep(c("Gabar1", "Gabar2"), 3),
+         variable = rep(c("Ro", "Control", "Fmr1 KO"), each = 2))
+
+ipSE$variable <- factor(ipSE$variable, levels = c("Control", "Ro", "Fmr1 KO"))
+
+### 347 x 366
+ggplot(ipMean, aes(x = Gene, y = value, fill = variable)) +
+  geom_bar(position = "dodge", stat = "identity") + 
+  geom_errorbar(aes(ymin = value - ipSE$value, ymax = value + ipSE$value), width = 0.2, position = position_dodge(0.9)) + 
+  xlab("") +
+  ylab("Relative Fold-Enrichment") +
+  scale_fill_manual(name = "Treatment",values = c("firebrick", "chartreuse4", "dodgerblue3")) +
+  theme_classic() +
+  theme(axis.title.y = element_text(size = 16),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15))
+```
+
+
+
+
+
+
+
+
+
+

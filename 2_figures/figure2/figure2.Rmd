@@ -1,0 +1,189 @@
+---
+title: "Figure 2 panels generated from RNAseq data (Heaney et al. 2021)"
+author: "Sanjeev V Namjoshi (snamjoshi87@utexas.edu)"
+date: "February 23rd, 2017 (revised June 15th, 2019)"
+output:
+  pdf_document: 
+    highlight: haddock
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
+```
+
+## Overview 
+
+The purpose of this figure was to analyze mTORC1-sensitive transcripts from the FMRP-target mRNAs identified from RIPseq analysis. The input data for this figure is the final count data obtained after final data filtration in the preprocessing pipeline.
+
+## Data loading and R packages
+
+The final results from Limma+Voom are loaded  to generate all the figures.
+
+```{r packages}
+library(ggplot2)
+library(magrittr)
+library(dplyr)
+library(tibble)
+library(RColorBrewer)
+library(VennDiagram)
+library(pheatmap)
+```
+
+```{r load_data_2, cache = TRUE}
+resultsRo <- 
+  read.csv("resultsRo.csv", 
+           header = TRUE, 
+           stringsAsFactors = FALSE) %>%
+  arrange(X) 
+
+resultsRoRap <- 
+  read.csv("resultsRoRap.csv", 
+           header = TRUE,
+           stringsAsFactors = FALSE) %>%
+  arrange(X)
+```
+
+## Figure 2A (top)
+
+Note here that the variables `resultsRO` and `resultsRoRap` refer to the differentially expressed mRNA in either Control/Ro-25-6981 or Ro-25-6981+Rapamycin/Ro-25-6981 conditions respectively. This data set was taken and filtered to an with an FDR cutoff of 0.1 and a $log_2$ fold change between -2 and 2. To create the Venn diagram, we apply these filters and then obtain the counts for each of the three sets: $\left \{ \text{Control/Ro-25-6981} \right \}$, $\left \{ \text{Ro-25-6981+Rapamycin/Ro-25-6981} \right \}$, or their intersection.
+
+```{r prepare_venn_foldchange}
+venn <-
+  full_join(resultsRo, resultsRoRap, by = "X") %>%
+  filter(logFC.x > -2 & logFC.x < 2) %>%
+  filter(logFC.y > -2 & logFC.y < 2)
+
+nRo <-
+  venn %>% 
+  filter(adj.P.Val.x < 0.1) %>%
+  nrow()
+
+nRoRap <-
+  venn %>% 
+  filter(adj.P.Val.y < 0.1) %>%
+  nrow()
+
+nBoth <-
+  venn %>%
+  filter(adj.P.Val.x < 0.1 & adj.P.Val.y < 0.1) %>%
+  nrow()
+
+overlap <- list("Saline/Ro" = 1:(nRo + nBoth), 
+                "Ro+Rapa/Ro" = (nRo + 1):(nRo + nRoRap + nBoth))
+```
+
+Finally, the results are plotted below.
+
+```{r fig2a_top, fig.width=5}
+# p < 0.0001
+vennDiagram <- venn.diagram(overlap,
+             fill = c("cornflowerblue", "lightcoral"),
+             alpha = c(0.5, 0.5), 
+             cex = 1.5,
+             cat.fontface = 3,
+             cat.cex = 1,
+             lty = 2, 
+             #fontfamily = 3,
+             cat.just = (list("Saline/Ro" = c(2.5, 5),
+                           "Ro+Rapa/Ro" = c(-1.2, 5))),
+             filename = NULL,
+             rotation.degree = 180,
+             scaled = FALSE)
+grid.newpage()
+grid.draw(vennDiagram)
+
+```
+
+## Figure 2A (bottom)
+
+The 190 transcripts at the intersection of the two treatments indicate mRNAs sensitive to both treatment of Ro-25-6981 and mTORC1 activity. Only one mRNA is oppositely regulated: `Dbp`, a transcription factor implicated in regulating circadian rhythm. First the data is filtered to produce the two different categories and the pie chart is created.
+
+The line and text denoting Dbp in the oppositely regulated category was added in after this figure was generated using the graphics editing software Inkscape.
+
+```{r prepare_heatmap}
+### Heatmap for fold-change data. This variable is used here and then later below for the actual heatmap.
+heatmapDat <- 
+  full_join(resultsRo, resultsRoRap, by = "X") %>%
+  filter(adj.P.Val.x < 0.1 & adj.P.Val.y < 0.1) %>%
+  filter(logFC.x > -2 & logFC.x < 2) %>%
+  filter(logFC.y > -2 & logFC.y < 2) %>%
+  dplyr::select(X, logFC.x, logFC.y) %>%
+  column_to_rownames("X") %>%
+  set_colnames(c("Saline/Ro", "Ro+Rapa/Ro"))
+```
+
+```{r fig2a_bottom}
+upreg <- 
+  heatmapDat %>% 
+  filter(`Saline/Ro` >= 0 & `Ro+Rapa/Ro` >= 0) %>%
+  nrow()
+
+downreg <-
+  heatmapDat %>% 
+  filter(`Saline/Ro` <= 0 & `Ro+Rapa/Ro` <= 0) %>%
+  nrow()
+
+oppreg <- 1
+
+Group = c("Upregulated", "Downregulated", "Oppositely Regulated")
+Value = c(upreg, downreg, oppreg)
+
+pieDat1 <- data.frame(Group, Value)
+
+###679 x 354
+ggplot(pieDat1, aes(x = "", y = Value, fill = Group)) +
+  geom_bar(width = 1, stat = "identity", color = "black") +
+  coord_polar("y", start = 0) +
+  scale_fill_manual(values = c("deepskyblue", "white", "lightcoral")) +
+  geom_text(aes(y = Value/2.5 + c(0, cumsum(Value)[-length(Value)]), label = Value), size = 5, color = "black") +
+  theme_minimal()+
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_blank(),
+    panel.border = element_blank(),
+    panel.grid = element_blank(),
+    axis.ticks = element_blank(),
+    plot.title = element_text(size = 14, face = "bold"))
+
+```
+
+The dotted lines connecting the top and bottom of Figure 2A was generated using the graphics editing software Inkscape.
+
+# Figure 2B
+
+This clustered dendrogram and heatmap represents the data in pie chart from figure 2A (bottom). The same filteration criteria was used on the data to generate the two sets and their intersection. 
+
+```{r david_cluster_heatmap, eval = FALSE}
+pheatmap1 <- 
+  pheatmap(heatmapDat, 
+         color = rev(brewer.pal(11, "RdYlBu")), fontsize = 7,
+         clustering_method = "average",
+         clustering_distance_rows = "euclidean",
+         clustering_distance_cols = "euclidean", 
+         show_rownames = FALSE, cluster_cols = FALSE, fontsize_col = 13)
+
+clusters <- 
+  sort(cutree(pheatmap1$tree_row, k = 6)) %>%
+  as.data.frame() %>%
+  set_colnames("Cluster") %>%
+  rownames_to_column("Gene") %>%
+  full_join(rownames(heatmapDat[pheatmap1$tree_row[["order"]],]) %>%
+            as.data.frame() %>%
+            set_colnames("Gene"), .) %>%
+  split(.$Cluster)
+```
+
+```{r fig2b, fig.width=5}
+### 214 x 576
+pheatmap(heatmapDat, 
+         color = rev(brewer.pal(11, "RdYlBu")), fontsize = 7,
+         clustering_method = "average",
+         clustering_distance_rows = "euclidean",
+         clustering_distance_cols = "euclidean", 
+         show_rownames = FALSE, cluster_cols = FALSE, fontsize_col = 13)
+```
+
+```{r}
+sessionInfo()
+```
